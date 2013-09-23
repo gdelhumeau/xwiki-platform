@@ -177,7 +177,7 @@
   #set ($xwikiPreferencesDocument = $xwiki.getDocument($xwikiPreferencesDocumentReference))
   #set ($xwikiPreferencesClassName = $services.model.serialize($xwikiPreferencesDocumentReference))
   #set ($xwikiPreferencesObject = $xwikiPreferencesDocument.getObject($xwikiPreferencesClassName))
-  #set ($workspaceInformationPanel = 'Panels.WorkspaceInformationPanel')
+  #set ($workspaceInformationPanel = 'Panels.WikiInformationPanel')
   #set ($currentRightPanels = $xwikiPreferencesObject.getProperty('rightPanels').value)  
   #if (!$xwiki.exists($manageWorkspaceDocumentReference) || !$currentRightPanels.contains($workspaceInformationPanel))
     #set ($templateFeaturesAttachment = $doc.getAttachment($TEMPLATE_FEATURES_PACKAGE))

@@ -2,7 +2,7 @@
 
 <xwikidoc>
   <web>Panels</web>
-  <name>WorkspaceInformationPanel</name>
+  <name>WikiInformationPanel</name>
   <language/>
   <defaultLanguage/>
   <translation>0</translation>
@@ -97,7 +97,7 @@
         <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
       </type>
     </class>
-    <name>Panels.WorkspaceInformationPanel</name>
+    <name>Panels.WikiInformationPanel</name>
     <number>0</number>
     <className>Panels.PanelClass</className>
     <guid>7fabd475-d8b1-4491-a2f4-0042652659db</guid>
