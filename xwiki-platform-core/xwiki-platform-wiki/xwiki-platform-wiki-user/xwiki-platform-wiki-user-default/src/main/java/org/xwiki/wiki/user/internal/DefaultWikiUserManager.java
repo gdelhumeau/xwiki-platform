@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Stack;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -30,6 +31,7 @@ import javax.inject.Singleton;
 
 import org.xwiki.component.annotation.Component;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.DocumentReferenceResolver;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.wiki.descriptor.WikiDescriptor;
 import org.xwiki.wiki.descriptor.WikiDescriptorManager;
@@ -83,6 +85,10 @@ public class DefaultWikiUserManager implements WikiUserManager
 
     private static final String CANDIDACY_CLASS_DATE_OF_CLOSURE_FIELD = "resolutionDate";
 
+    private static final String MEMBERS_GROUP_SPACE = XWiki.SYSTEM_SPACE;
+
+    private static final String MEMBERS_GROUP_PAGE = "XWikiAllGroup";
+
     @Inject
     private WikiDescriptorManager wikiDescriptorManager;
 
@@ -91,6 +97,9 @@ public class DefaultWikiUserManager implements WikiUserManager
 
     @Inject
     private EntityReferenceSerializer<String> documentReferenceSerializer;
+
+    @Inject
+    private DocumentReferenceResolver<String> documentReferenceResolver;
 
     @Inject
     private Provider<XWikiContext> xcontextProvider;
@@ -133,7 +142,7 @@ public class DefaultWikiUserManager implements WikiUserManager
     private XWikiDocument getMembersGroupDocument(String wikiId) throws WikiUserManagerException
     {
         // Reference to the document
-        DocumentReference memberGroupReference = new DocumentReference(wikiId, XWiki.SYSTEM_SPACE, "XWikiAllGroup");
+        DocumentReference memberGroupReference = new DocumentReference(wikiId, MEMBERS_GROUP_SPACE, MEMBERS_GROUP_PAGE);
 
         // Get the document
         try {
@@ -193,7 +202,41 @@ public class DefaultWikiUserManager implements WikiUserManager
     @Override
     public boolean isMember(String userId, String wikiId) throws WikiUserManagerException
     {
-        return getMembers(wikiId).contains(userId);
+        DocumentReference memberClassReference = new DocumentReference(wikiId, XWiki.SYSTEM_SPACE, GROUP_CLASS_NAME);
+        List<String> groupsAlreadParsed = new ArrayList<String>();
+        Stack<String> groupsToParse = new Stack<String>();
+        DocumentReference memberGroupReference = new DocumentReference(wikiId, MEMBERS_GROUP_SPACE, MEMBERS_GROUP_PAGE);
+        groupsToParse.push(documentReferenceSerializer.serialize(memberGroupReference));
+
+        XWikiContext xcontext = xcontextProvider.get();
+        XWiki xwiki = xcontext.getWiki();
+
+        while(!groupsToParse.empty()) {
+            try {
+                String group = groupsToParse.pop();
+                if (groupsAlreadParsed.contains(group)) {
+                    continue;
+                }
+                groupsAlreadParsed.add(group);
+                DocumentReference groupReference = documentReferenceResolver.resolve(group);
+                XWikiDocument groupDocument = xwiki.getDocument(groupReference, xcontext);
+                List<BaseObject> memberObjects = groupDocument.getXObjects(memberClassReference);
+                if (memberObjects != null) {
+                    for (BaseObject object : memberObjects) {
+                        String member = object.getStringValue(GROUP_CLASS_MEMBER_FIELD);
+                        if (member.equals(userId)) {
+                            return true;
+                        }
+                        groupsToParse.push(member);
+                    }
+                }
+
+            } catch (XWikiException e) {
+                throw new WikiUserManagerException("Failed to load a member document.", e);
+            }
+        }
+
+        return false;
     }
 
     private void addMemberObject(XWikiDocument groupDoc, String userId, DocumentReference classReference)
