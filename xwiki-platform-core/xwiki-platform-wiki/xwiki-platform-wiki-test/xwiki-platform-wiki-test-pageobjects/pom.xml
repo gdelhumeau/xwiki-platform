@@ -26,13 +26,13 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.xwiki.platform</groupId>
-    <artifactId>xwiki-platform-faq-test</artifactId>
+    <artifactId>xwiki-platform-wiki-test</artifactId>
     <version>5.3-SNAPSHOT</version>
   </parent>
-  <artifactId>xwiki-platform-faq-test-pageobjects</artifactId>
-  <name>XWiki Platform - FAQ - Tests - Page Objects</name>
+  <artifactId>xwiki-platform-wiki-test-pageobjects</artifactId>
+  <name>XWiki Platform - Wiki - Tests - Page Objects</name>
   <packaging>jar</packaging>
-  <description>XWiki Platform - FAQ - Tests - Page Objects</description>
+  <description>XWiki Platform - Wiki - Tests - Page Objects</description>
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>

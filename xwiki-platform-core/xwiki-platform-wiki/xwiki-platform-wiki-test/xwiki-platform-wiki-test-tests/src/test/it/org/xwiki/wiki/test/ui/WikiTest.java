@@ -17,69 +17,91 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.faq.test.ui;
+package org.xwiki.wiki.test.ui;
 
-import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-import org.xwiki.faq.test.po.FAQEntryEditPage;
-import org.xwiki.faq.test.po.FAQHomePage;
-import org.xwiki.panels.test.po.ApplicationsPanel;
 import org.xwiki.test.ui.AbstractTest;
-import org.xwiki.test.ui.po.LiveTableElement;
-import org.xwiki.test.ui.po.ViewPage;
+import org.xwiki.test.ui.SuperAdminAuthenticationRule;
+import org.xwiki.test.ui.po.editor.WikiEditPage;
+import org.xwiki.wiki.test.po.CreateWikiPage;
+import org.xwiki.wiki.test.po.WikiHomePage;
+import org.xwiki.wiki.test.po.WikiIndexPage;
 
-import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
- * UI tests for the FAQ application.
+ * UI tests for the Wiki application.
  *
  * @version $Id$
- * @since 4.3M2
+ * @since 5.3RC1
  */
 public class WikiTest extends AbstractTest
 {
-    // Note: we use a dot in the page name to verify it's supported by the FAQ application and we use an accent to
-    // verify encoding.
-    private static final String FAQ_TEST_PAGE = "Test.entrée de FAQ";
+    @Rule
+    public SuperAdminAuthenticationRule superAdminAuthenticationRule =
+            new SuperAdminAuthenticationRule(getUtil(), getDriver());
 
-    @Before
-    public void setUp()
+    private String TEMPLATE_CONTENT = "Content of the template";
+
+    public void createTemplateWiki() throws Exception
     {
-        // Login as superadmin to have delete rights.
-        getDriver().get(getUtil().getURLToLoginAs("superadmin", "pass"));
-        getUtil().recacheSecretToken();
+        WikiIndexPage wikiIndexPage = WikiIndexPage.gotoPage();
+        CreateWikiPage createWikiPage = wikiIndexPage.createWiki();
+        createWikiPage.setPrettyName("My new template");
+        // Let 100 ms to the javascript code to be executed
+        Thread.sleep(100);
+        // test that the wiki identifier is correctly computed
+        //assertEquals(createWikiPage.getName(), "mynewtemplate");
 
-        // Delete pages that we create in the test
-        getUtil().deletePage(getTestClassName(), FAQ_TEST_PAGE);
+        createWikiPage.setDescription("This is the template I do for the tests");
+        createWikiPage.setIsTemplate(true);
+
+        assertTrue(createWikiPage.isNextStepEnabled());
+
+        createWikiPage.goNextStep();
+        createWikiPage.create();
+
+        // Modify the template content
+        WikiHomePage wikiHomePage = new WikiHomePage();
+        WikiEditPage wikiEditPage = wikiHomePage.editWiki();
+        wikiEditPage.setContent(TEMPLATE_CONTENT);
+        wikiEditPage.clickSaveAndView();
+
+        // Verify the template is in the list of templates in the wizard
+        CreateWikiPage createWikiPage2 = wikiHomePage.createWiki();
+        assertTrue(createWikiPage2.getTemplateList().contains("mynewtemplate"));
     }
 
     @Test
-    public void testFAQ()
+    public void createWikiFromTemplate() throws Exception
     {
-        // Navigate to the FAQ app by clicking in the Application Panel.
-        // This verifies that the FAQ application is registered in the Applications Panel.
-        // It also verifies that the Translation is registered properly.
-        ApplicationsPanel applicationPanel = ApplicationsPanel.gotoPage();
-        ViewPage vp = applicationPanel.clickApplication("FAQ");
+        createTemplateWiki();
 
-        // Verify we're on the right page!
-        Assert.assertEquals(FAQHomePage.getSpace(), vp.getMetaDataValue("space"));
-        Assert.assertEquals(FAQHomePage.getPage(), vp.getMetaDataValue("page"));
-        FAQHomePage homePage = new FAQHomePage();
+        WikiIndexPage wikiIndexPage = WikiIndexPage.gotoPage();
+        CreateWikiPage createWikiPage = wikiIndexPage.createWiki();
+        createWikiPage.setPrettyName("My new wiki");
+        createWikiPage.setTemplate("mynewtemplate");
+        createWikiPage.setIsTemplate(false);
+        createWikiPage.setDescription("My first wiki");
+        createWikiPage.goNextStep();
+        createWikiPage.create();
+        assertTrue(createWikiPage.isProvisioningStep());
+        // Wait during the provisioning step
+        long timeout = System.currentTimeMillis() + 5000;
+        while (!createWikiPage.isFinalizeButtonEnabled() && System.currentTimeMillis() < timeout) {
+            Thread.sleep(100);
+        }
+        // Verify that the provisioning step is over
+        assertTrue(createWikiPage.isFinalizeButtonEnabled());
+        // Finalize
+        createWikiPage.finalize();
 
-        // Add FAQ entry
-        FAQEntryEditPage entryPage = homePage.addFAQEntry(FAQ_TEST_PAGE);
-        entryPage.setAnswer("content");
-        vp = entryPage.clickSaveAndView();
+        // Verify the content is the same than in the template
+        WikiHomePage wikiHomePage = new WikiHomePage();
+        WikiEditPage wikiEditPage = wikiHomePage.editWiki();
+        assertEquals(wikiEditPage.getContent(), TEMPLATE_CONTENT);
 
-        // Go back to the home page by clicking in the breadcrumb
-        vp.clickBreadcrumbLink("FAQ");
-        homePage = new FAQHomePage();
-
-        // Assert Livetable:
-        // - verify that the Translation has been applied by checking the Translated livetable column name
-        // - verify that the Livetable contains our new FAQ entry
-        LiveTableElement lt = homePage.getFAQLiveTable();
-        Assert.assertTrue(lt.hasRow("Question", FAQ_TEST_PAGE + "?"));
     }
 }

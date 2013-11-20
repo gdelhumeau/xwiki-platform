@@ -19,32 +19,11 @@
  */
 package org.xwiki.wiki.test.po;
 
-import java.util.List;
-
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
 public class CreateWikiPageStepUser extends ExtendedViewPage
 {
-    @FindBy(name = "wikiprettyname")
-    private WebElement prettyNameField;
-
-    @FindBy(name = "wikiname")
-    private WebElement wikiNameField;
-
-    @FindBy(name = "description")
-    private WebElement descriptionField;
-
-    @FindBy(name = "template")
-    private WebElement templateField;
-
-    @FindBy(name = "set_as_template")
-    private WebElement setAsTemplateField;
-
-    @FindBy(id = "wizard-next")
-    private WebElement nextStepButton;
-
     @FindBy(id = "wizard-create")
     private WebElement createButton;
 
@@ -58,48 +37,9 @@ public class CreateWikiPageStepUser extends ExtendedViewPage
         return "CreateNewWiki";
     }
 
-    public void setPrettyName(String prettyName)
+    public boolean isCreateButtonEnabled()
     {
-        prettyNameField.clear();
-        prettyNameField.sendKeys(prettyName);
-    }
-
-    public String getName()
-    {
-        return wikiNameField.getText();
-    }
-
-    public void setDescription(String description)
-    {
-        descriptionField.clear();
-        descriptionField.sendKeys(description);
-    }
-
-    public void setIsTemplate(boolean template)
-    {
-        if (template != setAsTemplateField.isSelected()) {
-            setAsTemplateField.click();
-        }
-    }
-
-    public void setTemplate(String templateId)
-    {
-        List<WebElement> elements = templateField.findElements(By.tagName("option"));
-        for (WebElement element : elements) {
-            if (element.getAttribute("value").equals(templateId)) {
-                element.click();
-            }
-        }
-    }
-
-    public boolean isNextStepEnabled()
-    {
-        return nextStepButton.isEnabled();
-    }
-
-    public void goNextStep()
-    {
-        nextStepButton.click();
+        return createButton.isEnabled();
     }
 
     public void create()

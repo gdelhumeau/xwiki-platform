@@ -19,6 +19,14 @@
  */
 package org.xwiki.wiki.test.po;
 
-public class WikiHomePage
+public class WikiHomePage extends ExtendedViewPage
 {
+    /**
+     * Opens the home page.
+     */
+    public static WikiIndexPage gotoPage(String wikiId)
+    {
+        //getUtil().gotoPage(getSpace(), getPage());
+        return new WikiIndexPage();
+    }
 }

@@ -17,65 +17,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.faq.test.po;
-
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
-import org.xwiki.test.ui.po.LiveTableElement;
-import org.xwiki.test.ui.po.ViewPage;
+package org.xwiki.wiki.test.po;
 
 /**
- * Represents actions that can be done on the FAQ.WebHome page.
+ * Represents actions that can be done on the WikiManager.WebHome page.
  *
  * @version $Id$
- * @since 4.3M2
  */
-public class WikiIndexPage extends ViewPage
+public class WikiIndexPage extends ExtendedViewPage
 {
-    @FindBy(name = "question")
-    private WebElement faqNameField;
-
-    @FindBy(xpath = "//div[@class = 'faq-link add-faq']//input[@class = 'button']")
-    private WebElement faqNameButton;
-
     /**
      * Opens the home page.
      */
-    public static FAQHomePage gotoPage()
+    public static WikiIndexPage gotoPage()
     {
         getUtil().gotoPage(getSpace(), getPage());
-        return new FAQHomePage();
+        return new WikiIndexPage();
     }
 
     public static String getSpace()
     {
-        return "FAQ";
+        return "WikiManager";
     }
 
     public static String getPage()
     {
         return "WebHome";
-    }
-
-    /**
-     * @param faqName the name of the FAQ entry to add
-     * @return the new FAQ entry page
-     */
-    public FAQEntryEditPage addFAQEntry(String faqName)
-    {
-        this.faqNameField.clear();
-        this.faqNameField.sendKeys(faqName);
-        this.faqNameButton.click();
-        return new FAQEntryEditPage();
-    }
-
-    /**
-     * @return the FAQ livetable element
-     */
-    public LiveTableElement getFAQLiveTable()
-    {
-        LiveTableElement lt = new LiveTableElement("faqs");
-        lt.waitUntilReady();
-        return lt;
     }
 }

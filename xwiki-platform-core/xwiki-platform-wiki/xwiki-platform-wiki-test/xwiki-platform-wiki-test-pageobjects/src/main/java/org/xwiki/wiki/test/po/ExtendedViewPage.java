@@ -19,6 +19,19 @@
  */
 package org.xwiki.wiki.test.po;
 
-public class ExtendedViewPage
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.xwiki.test.ui.po.ViewPage;
+
+public class ExtendedViewPage extends ViewPage
 {
+    @FindBy(id = "tmCreateWiki")
+    private WebElement createWikiMenuLink;
+
+    public CreateWikiPage createWiki()
+    {
+        moveToCreateMenu();
+        this.createWikiMenuLink.click();
+        return new CreateWikiPage();
+    }
 }

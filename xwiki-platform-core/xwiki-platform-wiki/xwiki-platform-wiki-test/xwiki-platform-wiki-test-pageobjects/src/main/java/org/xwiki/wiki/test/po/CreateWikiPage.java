@@ -19,6 +19,134 @@
  */
 package org.xwiki.wiki.test.po;
 
-public class CreateWikiPage
+import java.util.ArrayList;
+import java.util.List;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+
+public class CreateWikiPage extends ExtendedViewPage
 {
+    @FindBy(name = "wikiprettyname")
+    private WebElement prettyNameField;
+
+    @FindBy(name = "wikiname")
+    private WebElement wikiNameField;
+
+    @FindBy(name = "description")
+    private WebElement descriptionField;
+
+    @FindBy(name = "template")
+    private WebElement templateField;
+
+    @FindBy(name = "set_as_template")
+    private WebElement setAsTemplateField;
+
+    @FindBy(id = "wizard-next")
+    private WebElement nextStepButton;
+
+    @FindBy(id = "wizard-create")
+    private WebElement createButton;
+
+    @FindBy(id = "finalize")
+    private WebElement finalizeButton;
+
+    @FindBy(xpath = "//div[@class='wizard-header']/h1/span")
+    private WebElement stepTitle;
+
+    public static String getSpace()
+    {
+        return "WikiManager";
+    }
+
+    public static String getPage()
+    {
+        return "CreateNewWiki";
+    }
+
+    public void setPrettyName(String prettyName)
+    {
+        prettyNameField.clear();
+        prettyNameField.sendKeys(prettyName);
+    }
+
+    public String getName()
+    {
+        return wikiNameField.getText();
+    }
+
+    public void setDescription(String description)
+    {
+        descriptionField.clear();
+        descriptionField.sendKeys(description);
+    }
+
+    public void setIsTemplate(boolean template)
+    {
+        if (template != setAsTemplateField.isSelected()) {
+            setAsTemplateField.click();
+        }
+    }
+
+    public void setTemplate(String templateId)
+    {
+        List<WebElement> elements = templateField.findElements(By.tagName("option"));
+        for (WebElement element : elements) {
+            if (element.getAttribute("value").equals(templateId)) {
+                element.click();
+            }
+        }
+    }
+
+    public List<String> getTemplateList()
+    {
+        List<String> list = new ArrayList<String>();
+        List<WebElement> elements = templateField.findElements(By.tagName("option"));
+        for (WebElement element : elements) {
+            list.add(element.getAttribute("value"));
+        }
+        return list;
+    }
+
+    public boolean isNextStepEnabled()
+    {
+        return nextStepButton.isEnabled();
+    }
+
+    public boolean isCreateButtonEnabled()
+    {
+        return createButton.isEnabled();
+    }
+
+    public boolean isFinalizeButtonEnabled()
+    {
+        return finalizeButton.isEnabled();
+    }
+
+    public void goNextStep()
+    {
+        nextStepButton.click();
+    }
+
+    public void create()
+    {
+        createButton.click();
+    }
+
+    public void finalize()
+    {
+        finalizeButton.click();
+    }
+
+    public String getStepTitle()
+    {
+        return stepTitle.getText();
+    }
+
+    public boolean isProvisioningStep()
+    {
+        String title = getStepTitle();
+        return title.equals("The system is provisioning the wiki.");
+    }
 }
