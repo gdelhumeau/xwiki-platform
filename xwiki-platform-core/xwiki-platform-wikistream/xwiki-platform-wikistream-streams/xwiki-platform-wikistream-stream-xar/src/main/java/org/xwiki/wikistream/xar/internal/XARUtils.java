@@ -25,19 +25,23 @@ package org.xwiki.wikistream.xar.internal;
  */
 public final class XARUtils
 {
-    public static class Parameter
+    /**
+     * @version $Id$
+     * @since 5.3RC1
+     */
+    public static class EventParameter
     {
         public String name;
 
         public Class< ? > type;
 
-        public Parameter(String name, Class< ? > type)
+        public EventParameter(String name, Class< ? > type)
         {
             this.name = name;
             this.type = type;
         }
 
-        public Parameter(String name)
+        public EventParameter(String name)
         {
             this(name, String.class);
         }
@@ -46,5 +50,5 @@ public final class XARUtils
     /**
      * @since 5.2RC1
      */
-    public static final String ROLEHINT = "xwiki+xar/1.0";
+    public static final String ROLEHINT = "xwiki+xar/1.1";
 }
