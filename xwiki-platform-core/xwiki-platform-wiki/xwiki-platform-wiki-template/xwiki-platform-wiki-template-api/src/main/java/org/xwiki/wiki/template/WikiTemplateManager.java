@@ -75,6 +75,8 @@ public interface WikiTemplateManager
     WikiProvisioningJob createWikiFromTemplate(String newWikiId, String newWikiAlias, String templateId, String ownerId,
         boolean failOnExist) throws WikiTemplateManagerException;
 
+    WikiProvisioningJob applyTemplate(String wikiId, String templateId) throws WikiTemplateManagerException;
+
     /**
      * Get the wiki provisioning job.
      *
