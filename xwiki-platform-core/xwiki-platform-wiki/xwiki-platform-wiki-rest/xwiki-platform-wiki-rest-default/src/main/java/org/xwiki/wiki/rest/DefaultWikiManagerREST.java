@@ -22,7 +22,7 @@ package org.xwiki.wiki.rest;
 import java.net.URI;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
+import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -49,7 +49,14 @@ import org.xwiki.wiki.template.WikiTemplateManager;
 
 import com.xpn.xwiki.XWikiContext;
 
+/**
+ * Default implementation for {@link WikiManagerREST}.
+ *
+ * @since 5.3
+ * @version $Id$
+ */
 @Component
+@Path("/wikimanager")
 public class DefaultWikiManagerREST extends XWikiResource implements WikiManagerREST
 {
     @Inject
@@ -62,15 +69,12 @@ public class DefaultWikiManagerREST extends XWikiResource implements WikiManager
     private WikiTemplateManager wikiTemplateManager;
 
     @Inject
-    private Provider<XWikiContext> xcontextProvider;
-
-    @Inject
     private EntityReferenceSerializer<String> entityReferenceSerializer;
 
     @Override
     public Response createWiki(@QueryParam("template") String template, Wiki wiki) throws XWikiRestException
     {
-        XWikiContext xcontext = xcontextProvider.get();
+        XWikiContext xcontext = getXWikiContext();
         WikiDescriptor descriptor = null;
 
         try {
@@ -86,7 +90,7 @@ public class DefaultWikiManagerREST extends XWikiResource implements WikiManager
             descriptor.setPrettyName(wiki.getName());
             descriptor.setDescription(wiki.getDescription());
 
-            // Save tge descriptor
+            // Save the descriptor
             wikiDescriptorManager.saveDescriptor(descriptor);
 
             // Apply a template (if needed)

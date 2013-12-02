@@ -34,6 +34,7 @@
   <description>Default implementation for XWiki Platform - Wiki - REST - API</description>
   <packaging>jar</packaging>
   <dependencies>
+
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-wiki-rest-api</artifactId>

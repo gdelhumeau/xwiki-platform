@@ -172,8 +172,7 @@ public class DefaultWikiTemplateManager implements WikiTemplateManager
     }
 
     @Override
-    public WikiProvisioningJob applyTemplate(String wikiId, String templateId)
-            throws WikiTemplateManagerException
+    public WikiProvisioningJob applyTemplate(String wikiId, String templateId) throws WikiTemplateManagerException
     {
         try {
             return wikiProvisionerExecutor.createAndExecuteJob(wikiId, TemplateWikiProvisioningJob.JOBTYPE, templateId);
