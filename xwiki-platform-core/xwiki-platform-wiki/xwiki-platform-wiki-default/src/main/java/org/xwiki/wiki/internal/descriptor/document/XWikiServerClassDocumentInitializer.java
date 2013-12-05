@@ -19,6 +19,9 @@
  */
 package org.xwiki.wiki.internal.descriptor.document;
 
+import java.util.Iterator;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -206,6 +209,11 @@ public class XWikiServerClassDocumentInitializer extends AbstractMandatoryDocume
     public static final String FIELDPN_HOMEPAGE = "Home page";
 
     /**
+     * Page name of the sheet associated to the current document.
+     */
+    private static final String CLASS_SHEET_PAGE_NAME = "XWikiServerClassSheet";
+
+    /**
      * Used to bind a class to a document sheet.
      */
     @Inject
@@ -275,11 +283,25 @@ public class XWikiServerClassDocumentInitializer extends AbstractMandatoryDocume
         // Add missing document fields
         needsUpdate |= setClassDocumentFields(document, "XWiki Server Class");
 
+        // Remove the class sheet binding to XWiki.XWikiServerClassSheet because the sheet is now called
+        // WikiManager.XWikiServerClassSheet.
+        List<DocumentReference> sheets = this.classSheetBinder.getSheets(document);
+        String wikiName = document.getDocumentReference().getWikiReference().getName();
+        DocumentReference oldSheetReference = new DocumentReference(wikiName, XWiki.SYSTEM_SPACE,
+                CLASS_SHEET_PAGE_NAME);
+        Iterator<DocumentReference> itSheets = sheets.iterator();
+        while (itSheets.hasNext()) {
+            DocumentReference sheet = itSheets.next();
+            if (oldSheetReference.equals(sheet)) {
+                needsUpdate |= this.classSheetBinder.unbind(document, oldSheetReference);
+                itSheets.remove();
+            }
+        }
+
         // Use XWikiServerClassSheet to display documents having XWikiServerClass objects if no other class sheet is
         // specified.
-        if (this.classSheetBinder.getSheets(document).isEmpty()) {
-            String wikiName = document.getDocumentReference().getWikiReference().getName();
-            DocumentReference sheet = new DocumentReference(wikiName, "WikiManager", "XWikiServerClassSheet");
+        if (sheets.isEmpty()) {
+            DocumentReference sheet = new DocumentReference(wikiName, "WikiManager", CLASS_SHEET_PAGE_NAME);
             needsUpdate |= this.classSheetBinder.bind(document, sheet);
         }
 
@@ -291,5 +313,4 @@ public class XWikiServerClassDocumentInitializer extends AbstractMandatoryDocume
 
         return needsUpdate;
     }
-
 }
