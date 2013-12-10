@@ -27,7 +27,6 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -41,6 +40,7 @@ import org.xwiki.component.descriptor.ComponentInstantiationStrategy;
 import org.xwiki.filter.FilterEventParameters;
 import org.xwiki.rendering.parser.StreamParser;
 import org.xwiki.wikistream.WikiStreamException;
+import org.xwiki.wikistream.confluence.input.ConfluenceInputProperties;
 import org.xwiki.wikistream.confluence.xml.internal.ConfluenceFilter;
 import org.xwiki.wikistream.confluence.xml.internal.ConfluenceXMLPackage;
 import org.xwiki.wikistream.filter.user.GroupFilter;
@@ -222,7 +222,7 @@ public class ConfluenceInputWikiStream extends AbstractBeanInputWikiStream<Confl
         }
 
         // Generate documents events
-        for (Map.Entry<Integer, Set<Integer>> entry : this.confluencePackage.getPages().entrySet()) {
+        for (Map.Entry<Integer, List<Integer>> entry : this.confluencePackage.getPages().entrySet()) {
             int spaceId = entry.getKey();
 
             PropertiesConfiguration spaceProperties;

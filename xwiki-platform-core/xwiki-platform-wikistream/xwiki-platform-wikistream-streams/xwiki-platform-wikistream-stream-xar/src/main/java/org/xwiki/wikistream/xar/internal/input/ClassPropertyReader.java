@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.xwiki.filter.FilterEventParameters;
 import org.xwiki.rendering.parser.ParseException;
 import org.xwiki.wikistream.WikiStreamException;
+import org.xwiki.wikistream.xar.input.XARInputProperties;
 import org.xwiki.wikistream.xar.internal.XARClassPropertyModel;
 import org.xwiki.wikistream.xar.internal.XARFilter;
 
@@ -61,8 +62,13 @@ public class ClassPropertyReader extends AbstractReader
         }
     }
 
-    public WikiClassProperty read(XMLStreamReader xmlReader, XARInputProperties properties) throws XMLStreamException,
-        IOException, WikiStreamException, ParseException
+    public ClassPropertyReader(XARInputProperties properties)
+    {
+        super(properties);
+    }
+
+    public WikiClassProperty read(XMLStreamReader xmlReader) throws XMLStreamException, IOException,
+        WikiStreamException, ParseException
     {
         WikiClassProperty wikiClassProperty = new WikiClassProperty();
 

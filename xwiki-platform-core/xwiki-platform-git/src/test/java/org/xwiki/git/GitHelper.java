@@ -41,10 +41,17 @@ public class GitHelper
 
     public File getRepositoryFile(String repoName) throws Exception
     {
-        return new File(this.environment.getPermanentDirectory(), "git/" + repoName);
+        File localGitDirectory = new File(this.environment.getPermanentDirectory(), "git");
+        File localDirectory = new File(localGitDirectory, repoName);
+        return localDirectory;
     }
 
-    public File createGitTestRepository(String repoName) throws Exception
+    public boolean exists(String repoName) throws Exception
+    {
+        return getRepositoryFile(repoName).exists();
+    }
+
+    public Repository createGitTestRepository(String repoName) throws Exception
     {
         File localDirectory = getRepositoryFile(repoName);
         File gitDirectory = new File(localDirectory, ".git");
@@ -53,8 +60,10 @@ public class GitHelper
             .readEnvironment()
             .findGitDir()
             .build();
-        repository.create();
-        return repository.getDirectory();
+        if (!gitDirectory.exists()) {
+            repository.create();
+        }
+        return repository;
     }
 
     public void add(File repo, String path, String content, PersonIdent author, PersonIdent committer,

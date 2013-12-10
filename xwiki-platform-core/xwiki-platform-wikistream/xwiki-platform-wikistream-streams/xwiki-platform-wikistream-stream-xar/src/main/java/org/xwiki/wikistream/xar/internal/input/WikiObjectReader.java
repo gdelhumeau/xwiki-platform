@@ -29,11 +29,12 @@ import javax.xml.stream.XMLStreamReader;
 import org.xwiki.filter.FilterEventParameters;
 import org.xwiki.rendering.parser.ParseException;
 import org.xwiki.wikistream.WikiStreamException;
+import org.xwiki.wikistream.xar.input.XARInputProperties;
 import org.xwiki.wikistream.xar.internal.XARClassModel;
 import org.xwiki.wikistream.xar.internal.XARFilter;
 import org.xwiki.wikistream.xar.internal.XARObjectModel;
 import org.xwiki.wikistream.xar.internal.XARObjectPropertyModel;
-import org.xwiki.wikistream.xar.internal.XARUtils.Parameter;
+import org.xwiki.wikistream.xar.internal.XARUtils.EventParameter;
 import org.xwiki.wikistream.xar.internal.input.ClassReader.WikiClass;
 
 /**
@@ -42,7 +43,7 @@ import org.xwiki.wikistream.xar.internal.input.ClassReader.WikiClass;
  */
 public class WikiObjectReader extends AbstractReader
 {
-    public class WikiObject
+    public static class WikiObject
     {
         public WikiClass wikiClass;
 
@@ -66,6 +67,11 @@ public class WikiObjectReader extends AbstractReader
         }
     }
 
+    public WikiObjectReader(XARInputProperties properties)
+    {
+        super(properties);
+    }
+
     public class WikiObjectProperty
     {
         public String name;
@@ -80,23 +86,23 @@ public class WikiObjectReader extends AbstractReader
         }
     }
 
-    public WikiObject readObject(XMLStreamReader xmlReader, XARInputProperties properties) throws XMLStreamException,
-        WikiStreamException, IOException, ParseException
+    public WikiObject readObject(XMLStreamReader xmlReader) throws XMLStreamException, WikiStreamException,
+        IOException, ParseException
     {
         WikiObject wikiObject = new WikiObject();
 
         for (xmlReader.nextTag(); xmlReader.isStartElement(); xmlReader.nextTag()) {
             String elementName = xmlReader.getLocalName();
             if (elementName.equals(XARClassModel.ELEMENT_CLASS)) {
-                ClassReader reader = new ClassReader();
+                ClassReader reader = new ClassReader(this.properties);
 
-                wikiObject.wikiClass = reader.read(xmlReader, properties);
+                wikiObject.wikiClass = reader.read(xmlReader);
             } else if (elementName.equals(XARObjectPropertyModel.ELEMENT_PROPERTY)) {
-                wikiObject.properties.add(readObjectProperty(xmlReader, properties));
+                wikiObject.properties.add(readObjectProperty(xmlReader));
             } else {
                 String value = xmlReader.getElementText();
 
-                Parameter parameter = XARObjectModel.OBJECT_PARAMETERS.get(elementName);
+                EventParameter parameter = XARObjectModel.OBJECT_PARAMETERS.get(elementName);
 
                 if (parameter != null) {
                     wikiObject.parameters.put(parameter.name, convert(parameter.type, value));
@@ -107,8 +113,8 @@ public class WikiObjectReader extends AbstractReader
         return wikiObject;
     }
 
-    private WikiObjectProperty readObjectProperty(XMLStreamReader xmlReader, XARInputProperties properties)
-        throws XMLStreamException, WikiStreamException
+    private WikiObjectProperty readObjectProperty(XMLStreamReader xmlReader) throws XMLStreamException,
+        WikiStreamException
     {
         xmlReader.nextTag();
 

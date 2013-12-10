@@ -28,9 +28,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.xwiki.filter.FilterEventParameters;
 import org.xwiki.rendering.parser.ParseException;
 import org.xwiki.wikistream.WikiStreamException;
+import org.xwiki.wikistream.xar.input.XARInputProperties;
 import org.xwiki.wikistream.xar.internal.XARAttachmentModel;
 import org.xwiki.wikistream.xar.internal.XARFilter;
-import org.xwiki.wikistream.xar.internal.XARUtils.Parameter;
+import org.xwiki.wikistream.xar.internal.XARUtils.EventParameter;
 
 /**
  * @version $Id$
@@ -38,7 +39,7 @@ import org.xwiki.wikistream.xar.internal.XARUtils.Parameter;
  */
 public class AttachmentReader extends AbstractReader
 {
-    public class WikiAttachment
+    public static class WikiAttachment
     {
         public String name;
 
@@ -53,8 +54,13 @@ public class AttachmentReader extends AbstractReader
         }
     }
 
-    public WikiAttachment read(XMLStreamReader xmlReader, XARInputProperties properties) throws XMLStreamException,
-        WikiStreamException, ParseException
+    public AttachmentReader(XARInputProperties properties)
+    {
+        super(properties);
+    }
+
+    public WikiAttachment read(XMLStreamReader xmlReader) throws XMLStreamException, WikiStreamException,
+        ParseException
     {
         WikiAttachment wikiAttachment = new WikiAttachment();
 
@@ -63,7 +69,7 @@ public class AttachmentReader extends AbstractReader
 
             String value = xmlReader.getElementText();
 
-            Parameter parameter = XARAttachmentModel.ATTACHMENT_PARAMETERS.get(elementName);
+            EventParameter parameter = XARAttachmentModel.ATTACHMENT_PARAMETERS.get(elementName);
 
             if (parameter != null) {
                 wikiAttachment.parameters.put(parameter.name, convert(parameter.type, value));

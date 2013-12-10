@@ -27,14 +27,16 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLInputFactory;
@@ -160,7 +162,7 @@ public class ConfluenceXMLPackage
 
     private File tree;
 
-    private Map<Integer, Set<Integer>> pages = new HashMap<Integer, Set<Integer>>();
+    private Map<Integer, List<Integer>> pages = new HashMap<Integer, List<Integer>>();
 
     public ConfluenceXMLPackage(InputSource source) throws IOException, WikiStreamException, XMLStreamException,
         FactoryConfigurationError, NumberFormatException, ConfigurationException
@@ -282,7 +284,7 @@ public class ConfluenceXMLPackage
         return spaceProperties.getString(KEY_SPACE_NAME);
     }
 
-    public Map<Integer, Set<Integer>> getPages()
+    public Map<Integer, List<Integer>> getPages()
     {
         return this.pages;
     }
@@ -396,9 +398,9 @@ public class ConfluenceXMLPackage
         saveSpaceProperties(properties, spaceId);
 
         // Register space
-        Set<Integer> spacePages = this.pages.get(spaceId);
+        List<Integer> spacePages = this.pages.get(spaceId);
         if (spacePages == null) {
-            spacePages = new HashSet<Integer>();
+            spacePages = new LinkedList<Integer>();
             this.pages.put(spaceId, spacePages);
         }
     }
@@ -460,9 +462,9 @@ public class ConfluenceXMLPackage
         Integer originalVersion = (Integer) properties.getProperty("originalVersion");
         if (originalVersion == null) {
             Integer spaceId = (Integer) properties.getInteger("space", null);
-            Set<Integer> spacePages = this.pages.get(spaceId);
+            List<Integer> spacePages = this.pages.get(spaceId);
             if (spacePages == null) {
-                spacePages = new HashSet<Integer>();
+                spacePages = new LinkedList<Integer>();
                 this.pages.put(spaceId, spacePages);
             }
             spacePages.add(pageId);
@@ -649,15 +651,15 @@ public class ConfluenceXMLPackage
         return new File(folder, "properties.properties");
     }
 
-    public List<Integer> getAttachments(int pageId)
+    public Collection<Integer> getAttachments(int pageId)
     {
         File folder = getAttachmentsFolder(pageId);
 
-        List<Integer> attachments;
+        Collection<Integer> attachments;
         if (folder.exists()) {
             String[] attachmentFolders = folder.list();
 
-            attachments = new ArrayList<Integer>(attachmentFolders.length);
+            attachments = new TreeSet<Integer>();
             for (String attachmentIdString : attachmentFolders) {
                 if (NumberUtils.isNumber(attachmentIdString)) {
                     attachments.add(Integer.valueOf(attachmentIdString));
@@ -725,15 +727,15 @@ public class ConfluenceXMLPackage
         return new PropertiesConfiguration(file);
     }
 
-    public List<Integer> getUsers()
+    public Collection<Integer> getUsers()
     {
         File folder = getUsersFolder();
 
-        List<Integer> users;
+        Collection<Integer> users;
         if (folder.exists()) {
             String[] userFolders = folder.list();
 
-            users = new ArrayList<Integer>(userFolders.length);
+            users = new TreeSet<Integer>();
             for (String userIdString : userFolders) {
                 if (NumberUtils.isNumber(userIdString)) {
                     users.add(Integer.valueOf(userIdString));
@@ -746,15 +748,15 @@ public class ConfluenceXMLPackage
         return users;
     }
 
-    public List<Integer> getGroups()
+    public Collection<Integer> getGroups()
     {
         File folder = getGroupsFolder();
 
-        List<Integer> groups;
+        Collection<Integer> groups;
         if (folder.exists()) {
             String[] groupFolders = folder.list();
 
-            groups = new ArrayList<Integer>(groupFolders.length);
+            groups = new TreeSet<Integer>();
             for (String groupIdString : groupFolders) {
                 if (NumberUtils.isNumber(groupIdString)) {
                     groups.add(Integer.valueOf(groupIdString));

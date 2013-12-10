@@ -36,9 +36,10 @@ import org.xwiki.wikistream.input.InputSource;
 import org.xwiki.wikistream.input.InputStreamInputSource;
 import org.xwiki.wikistream.input.ReaderInputSource;
 import org.xwiki.wikistream.internal.input.AbstractBeanInputWikiStream;
+import org.xwiki.wikistream.xar.input.XARInputProperties;
 import org.xwiki.wikistream.xar.internal.XARFilter;
 import org.xwiki.wikistream.xar.internal.XARUtils;
-import org.xwiki.wikistream.xml.input.source.SourceInputSource;
+import org.xwiki.wikistream.xml.input.SourceInputSource;
 
 /**
  * @version $Id$
@@ -103,10 +104,10 @@ public class XARInputWikiStream extends AbstractBeanInputWikiStream<XARInputProp
 
     private void readXAR(Object filter, XARFilter proxyFilter) throws WikiStreamException
     {
-        WikiReader wikiReader = new WikiReader(this.syntaxFactory, this.relativeResolver);
+        WikiReader wikiReader = new WikiReader(this.syntaxFactory, this.relativeResolver, this.properties);
 
         try {
-            wikiReader.read(filter, proxyFilter, this.properties);
+            wikiReader.read(filter, proxyFilter);
         } catch (Exception e) {
             throw new WikiStreamException("Failed to read XAR package", e);
         }
@@ -114,10 +115,11 @@ public class XARInputWikiStream extends AbstractBeanInputWikiStream<XARInputProp
 
     protected void readDocument(Object filter, XARFilter proxyFilter) throws WikiStreamException
     {
-        DocumentLocaleReader documentReader = new DocumentLocaleReader(this.syntaxFactory, this.relativeResolver);
+        DocumentLocaleReader documentReader =
+            new DocumentLocaleReader(this.syntaxFactory, this.relativeResolver, this.properties);
 
         try {
-            documentReader.read(filter, proxyFilter, this.properties);
+            documentReader.read(filter, proxyFilter);
         } catch (Exception e) {
             throw new WikiStreamException("Failed to read XAR XML document", e);
         }

@@ -29,9 +29,10 @@ import javax.xml.stream.XMLStreamReader;
 import org.xwiki.filter.FilterEventParameters;
 import org.xwiki.rendering.parser.ParseException;
 import org.xwiki.wikistream.WikiStreamException;
+import org.xwiki.wikistream.xar.input.XARInputProperties;
 import org.xwiki.wikistream.xar.internal.XARClassModel;
 import org.xwiki.wikistream.xar.internal.XARFilter;
-import org.xwiki.wikistream.xar.internal.XARUtils.Parameter;
+import org.xwiki.wikistream.xar.internal.XARUtils.EventParameter;
 import org.xwiki.wikistream.xar.internal.input.ClassPropertyReader.WikiClassProperty;
 
 /**
@@ -40,7 +41,7 @@ import org.xwiki.wikistream.xar.internal.input.ClassPropertyReader.WikiClassProp
  */
 public class ClassReader extends AbstractReader
 {
-    private ClassPropertyReader propertyReader = new ClassPropertyReader();
+    private ClassPropertyReader propertyReader;
 
     public static class WikiClass
     {
@@ -60,28 +61,40 @@ public class ClassReader extends AbstractReader
 
             proxyFilter.endWikiClass(this.parameters);
         }
+
+        public boolean isEmpty()
+        {
+            return this.properties.isEmpty();
+        }
     }
 
-    public WikiClass read(XMLStreamReader xmlReader, XARInputProperties properties) throws XMLStreamException,
-        IOException, WikiStreamException, ParseException
+    public ClassReader(XARInputProperties properties)
+    {
+        super(properties);
+
+        this.propertyReader = new ClassPropertyReader(properties);
+    }
+
+    public WikiClass read(XMLStreamReader xmlReader) throws XMLStreamException, IOException, WikiStreamException,
+        ParseException
     {
         WikiClass wikiClass = new WikiClass();
 
         for (xmlReader.nextTag(); xmlReader.isStartElement(); xmlReader.nextTag()) {
             String elementName = xmlReader.getLocalName();
 
-            if (XARClassModel.ELEMENT_NAME.equals(elementName)) {
+            if (wikiClass.name == null && XARClassModel.ELEMENT_NAME.equals(elementName)) {
                 wikiClass.name = xmlReader.getElementText();
             } else if (XARClassModel.CLASS_PARAMETERS.containsKey(elementName)) {
                 String value = xmlReader.getElementText();
 
-                Parameter parameter = XARClassModel.CLASS_PARAMETERS.get(elementName);
+                EventParameter parameter = XARClassModel.CLASS_PARAMETERS.get(elementName);
 
                 if (parameter != null) {
                     wikiClass.parameters.put(parameter.name, convert(parameter.type, value));
                 }
             } else {
-                wikiClass.properties.add(this.propertyReader.read(xmlReader, properties));
+                wikiClass.properties.add(this.propertyReader.read(xmlReader));
             }
         }
 
