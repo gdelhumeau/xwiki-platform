@@ -17,11 +17,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.wiki.rest;
+package org.xwiki.wiki.rest.internal;
 
 import java.net.URI;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
@@ -45,18 +46,20 @@ import org.xwiki.wiki.descriptor.WikiDescriptor;
 import org.xwiki.wiki.descriptor.WikiDescriptorManager;
 import org.xwiki.wiki.manager.WikiManager;
 import org.xwiki.wiki.provisioning.WikiProvisioningJob;
+import org.xwiki.wiki.rest.WikiManagerREST;
 import org.xwiki.wiki.template.WikiTemplateManager;
 
 import com.xpn.xwiki.XWikiContext;
 
 /**
- * Default implementation for {@link WikiManagerREST}.
+ * Default implementation for {@link org.xwiki.wiki.rest.WikiManagerREST}.
  *
  * @since 5.4M1
  * @version $Id$
  */
 @Component
 @Path("/wikimanager")
+@Named("wikimanager")
 public class DefaultWikiManagerREST extends XWikiResource implements WikiManagerREST
 {
     @Inject

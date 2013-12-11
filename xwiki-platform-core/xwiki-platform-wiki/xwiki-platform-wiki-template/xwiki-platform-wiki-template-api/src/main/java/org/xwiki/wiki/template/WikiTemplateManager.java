@@ -82,6 +82,8 @@ public interface WikiTemplateManager
      * @param templateId id of the template to use
      * @return the job that provisions the wiki with the template content
      * @throws WikiTemplateManagerException if problems occur
+     *
+     * @since 5.4M1
      */
     WikiProvisioningJob applyTemplate(String wikiId, String templateId) throws WikiTemplateManagerException;
 

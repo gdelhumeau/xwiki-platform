@@ -23,17 +23,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-import org.xwiki.component.annotation.Role;
 import org.xwiki.rest.XWikiRestException;
 import org.xwiki.rest.model.jaxb.Wiki;
 
 /**
  * REST API to create wikis.
  *
- * @since 5.3
+ * @since 5.4M1
  * @version $Id$
  */
-@Role
 @Path("/wikimanager")
 public interface WikiManagerREST
 {

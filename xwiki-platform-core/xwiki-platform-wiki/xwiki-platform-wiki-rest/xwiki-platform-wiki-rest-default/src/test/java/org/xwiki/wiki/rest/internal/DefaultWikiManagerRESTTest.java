@@ -17,21 +17,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.xwiki.wiki.rest;
+package org.xwiki.wiki.rest.internal;
 
 import javax.ws.rs.core.Response;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.xwiki.component.util.DefaultParameterizedType;
+import org.xwiki.context.Execution;
+import org.xwiki.context.ExecutionContext;
 import org.xwiki.model.reference.EntityReferenceSerializer;
+import org.xwiki.rest.XWikiRestComponent;
 import org.xwiki.rest.model.jaxb.Wiki;
 import org.xwiki.test.mockito.MockitoComponentMockingRule;
 import org.xwiki.wiki.descriptor.WikiDescriptor;
 import org.xwiki.wiki.descriptor.WikiDescriptorManager;
 import org.xwiki.wiki.manager.WikiManager;
 import org.xwiki.wiki.provisioning.WikiProvisioningJob;
+import org.xwiki.wiki.rest.WikiManagerREST;
 import org.xwiki.wiki.template.WikiTemplateManager;
+
+import com.xpn.xwiki.XWikiContext;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -41,8 +48,8 @@ import static org.mockito.Mockito.when;
 public class DefaultWikiManagerRESTTest
 {
     @Rule
-    public MockitoComponentMockingRule<DefaultWikiManagerREST> mocker =
-            new MockitoComponentMockingRule(DefaultWikiManagerREST.class);
+    public MockitoComponentMockingRule<WikiManagerREST> mocker =
+            new MockitoComponentMockingRule(DefaultWikiManagerREST.class, XWikiRestComponent.class, "wikimanager");
 
     private WikiManager wikiManager;
 
@@ -52,13 +59,24 @@ public class DefaultWikiManagerRESTTest
 
     private EntityReferenceSerializer<String> entityReferenceSerializer;
 
+    private Execution execution;
+
+    private XWikiContext xcontext;
+
     @Before
     public void setUp() throws Exception
     {
+        execution = mock(Execution.class);
+        mocker.registerComponent(Execution.class, execution);
+        xcontext = mock(XWikiContext.class);
+        ExecutionContext executionContext = mock(ExecutionContext.class);
+        when(execution.getContext()).thenReturn(executionContext);
+        when(executionContext.getProperty("xwikicontext")).thenReturn(xcontext);
         wikiManager = mocker.getInstance(WikiManager.class);
         wikiDescriptorManager = mocker.getInstance(WikiDescriptorManager.class);
         wikiTemplateManager = mocker.getInstance(WikiTemplateManager.class);
-        entityReferenceSerializer = mocker.getInstance(EntityReferenceSerializer.class);
+        entityReferenceSerializer = mocker.getInstance(new DefaultParameterizedType(null,
+                EntityReferenceSerializer.class, String.class));
     }
 
     @Test
