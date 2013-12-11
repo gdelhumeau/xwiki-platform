@@ -52,7 +52,7 @@ import com.xpn.xwiki.XWikiContext;
 /**
  * Default implementation for {@link WikiManagerREST}.
  *
- * @since 5.3
+ * @since 5.4M1
  * @version $Id$
  */
 @Component
