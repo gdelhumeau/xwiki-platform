@@ -28,8 +28,8 @@ import org.xwiki.wiki.test.po.CreateWikiPage;
 import org.xwiki.wiki.test.po.WikiHomePage;
 import org.xwiki.wiki.test.po.WikiIndexPage;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * UI tests for the Wiki application.
@@ -75,6 +75,12 @@ public class WikiTest extends AbstractTest
     }
 
     @Test
+    public void doNothinf() throws Exception
+    {
+
+    }
+
+    // @Test
     public void createWikiFromTemplate() throws Exception
     {
         createTemplateWiki();
