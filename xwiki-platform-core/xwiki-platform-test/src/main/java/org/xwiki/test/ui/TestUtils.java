@@ -97,6 +97,11 @@ public class TestUtils
     public static final String BASE_BIN_URL = BASE_URL + "bin/";
 
     /**
+     * @since 5.3RC1
+     */
+    public static final String BASE_WIKI_URL = BASE_URL + "wiki/";
+
+    /**
      * @since 5.0M2
      */
     public static final String BASE_REST_URL = BASE_URL + "rest/";

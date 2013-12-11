@@ -26,29 +26,18 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.xwiki.platform</groupId>
-    <artifactId>xwiki-platform-core</artifactId>
-    <version>5.4-SNAPSHOT</version>
+    <artifactId>xwiki-platform-wiki-test</artifactId>
+    <version>5.3-SNAPSHOT</version>
   </parent>
-  <artifactId>xwiki-platform-wiki</artifactId>
-  <name>XWiki Platform - Wiki - Parent POM</name>
-  <packaging>pom</packaging>
-  <description>XWiki Platform - Wiki - Parent POM</description>
-  <modules>
-    <module>xwiki-platform-wiki-api</module>
-    <module>xwiki-platform-wiki-default</module>
-    <module>xwiki-platform-wiki-script</module>
-    <module>xwiki-platform-wiki-template</module>
-    <module>xwiki-platform-wiki-user</module>
-    <module>xwiki-platform-wiki-ui</module>
-    <module>xwiki-platform-wiki-rest</module>
-    <module>xwiki-platform-wiki-workspaces-migrator</module>
-  </modules>
-  <profiles>
-    <profile>
-      <id>integration-tests</id>
-      <modules>
-        <module>xwiki-platform-wiki-test</module>
-      </modules>
-    </profile>
-  </profiles>
+  <artifactId>xwiki-platform-wiki-test-pageobjects</artifactId>
+  <name>XWiki Platform - Wiki - Tests - Page Objects</name>
+  <packaging>jar</packaging>
+  <description>XWiki Platform - Wiki - Tests - Page Objects</description>
+  <dependencies>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-test</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>
