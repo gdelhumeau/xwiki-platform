@@ -75,7 +75,7 @@ public class WikiTest extends AbstractTest
     }
 
     @Test
-    public void doNothinf() throws Exception
+    public void doNothing() throws Exception
     {
 
     }

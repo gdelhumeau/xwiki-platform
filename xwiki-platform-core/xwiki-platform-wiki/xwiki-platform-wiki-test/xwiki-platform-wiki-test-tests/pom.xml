@@ -42,14 +42,14 @@
   <dependencies>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-wiki-ui-mainwiki</artifactId>
+      <artifactId>xwiki-platform-wiki-rest-default</artifactId>
       <version>${project.version}</version>
-      <type>xar</type>
     </dependency>
     <dependency>
       <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-wiki-rest-default</artifactId>
+      <artifactId>xwiki-platform-wiki-ui-mainwiki</artifactId>
       <version>${project.version}</version>
+      <type>xar</type>
     </dependency>
     <!-- Test dependencies -->
     <dependency>
@@ -61,12 +61,6 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-wiki-test-pageobjects</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.xwiki.platform</groupId>
-      <artifactId>xwiki-platform-wiki-rest-default</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
