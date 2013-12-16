@@ -92,7 +92,6 @@ public class WikiManagerRestTest
         Wiki wiki = objectFactory.createWiki();
         wiki.setId(WIKI_ID);
 
-        System.out.println("YO: "+getFullUri(WikiManagerREST.class));
         PostMethod postMethod = executePost(getFullUri(WikiManagerREST.class), "superadmin", "pass", wiki);
         Assert.assertEquals(HttpStatus.SC_CREATED, postMethod.getStatusCode());
 
