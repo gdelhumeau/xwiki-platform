@@ -50,10 +50,6 @@ public class WikiTest extends AbstractTest
         WikiIndexPage wikiIndexPage = WikiIndexPage.gotoPage();
         CreateWikiPage createWikiPage = wikiIndexPage.createWiki();
         createWikiPage.setPrettyName("My new template");
-        // Let 100 ms to the javascript code to be executed
-        Thread.sleep(100);
-        // test that the wiki identifier is correctly computed
-        //assertEquals(createWikiPage.getName(), "mynewtemplate");
 
         createWikiPage.setDescription("This is the template I do for the tests");
         createWikiPage.setIsTemplate(true);
@@ -62,12 +58,14 @@ public class WikiTest extends AbstractTest
 
         createWikiPage.goNextStep();
         createWikiPage.create();
+        createWikiPage.waitUntilPageIsLoaded();
 
         // Modify the template content
         WikiHomePage wikiHomePage = new WikiHomePage();
         WikiEditPage wikiEditPage = wikiHomePage.editWiki();
         wikiEditPage.setContent(TEMPLATE_CONTENT);
         wikiEditPage.clickSaveAndView();
+        wikiEditPage.waitUntilPageIsLoaded();
 
         // Verify the template is in the list of templates in the wizard
         CreateWikiPage createWikiPage2 = wikiHomePage.createWiki();
@@ -75,12 +73,6 @@ public class WikiTest extends AbstractTest
     }
 
     @Test
-    public void doNothing() throws Exception
-    {
-
-    }
-
-    // @Test
     public void createWikiFromTemplate() throws Exception
     {
         createTemplateWiki();

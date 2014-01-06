@@ -49,6 +49,7 @@ import org.xwiki.rest.model.jaxb.SearchResults;
 import org.xwiki.rest.model.jaxb.Wiki;
 import org.xwiki.rest.model.jaxb.Wikis;
 import org.xwiki.rest.resources.pages.PageResource;
+import org.xwiki.rest.resources.wikis.WikisResource;
 import org.xwiki.rest.resources.wikis.WikisSearchQueryResource;
 import org.xwiki.test.integration.XWikiExecutor;
 import org.xwiki.wiki.rest.WikiManagerREST;
@@ -98,7 +99,7 @@ public class WikiManagerRestTest
         wiki = (Wiki) unmarshaller.unmarshal(postMethod.getResponseBodyAsStream());
         Assert.assertEquals(WIKI_ID, wiki.getId());
 
-        GetMethod getMethod = executeGet(getFullUri(WikiManagerREST.class));
+        GetMethod getMethod = executeGet(getFullUri(WikisResource.class));
         Assert.assertEquals(HttpStatus.SC_OK, getMethod.getStatusCode());
 
         Wikis wikis = (Wikis) unmarshaller.unmarshal(getMethod.getResponseBodyAsStream());
