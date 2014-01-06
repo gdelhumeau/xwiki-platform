@@ -46,15 +46,6 @@ public class CreateWikiPage extends ExtendedViewPage
     @FindBy(id = "wizard-next")
     private WebElement nextStepButton;
 
-    @FindBy(id = "wizard-create")
-    private WebElement createButton;
-
-    @FindBy(id = "finalize")
-    private WebElement finalizeButton;
-
-    @FindBy(xpath = "//div[@class='wizard-header']/h1/span")
-    private WebElement stepTitle;
-
     public static String getSpace()
     {
         return "WikiManager";
@@ -114,14 +105,11 @@ public class CreateWikiPage extends ExtendedViewPage
         return nextStepButton.isEnabled();
     }
 
-    public boolean isCreateButtonEnabled()
+    public CreateWikiPageStepUser goUserStep()
     {
-        return createButton.isEnabled();
-    }
-
-    public boolean isFinalizeButtonEnabled()
-    {
-        return finalizeButton.isEnabled();
+        nextStepButton.click();
+        waitUntilPageIsLoaded();
+        return new CreateWikiPageStepUser();
     }
 
     public void goNextStep()
@@ -129,24 +117,4 @@ public class CreateWikiPage extends ExtendedViewPage
         nextStepButton.click();
     }
 
-    public void create()
-    {
-        createButton.click();
-    }
-
-    public void finalize()
-    {
-        finalizeButton.click();
-    }
-
-    public String getStepTitle()
-    {
-        return stepTitle.getText();
-    }
-
-    public boolean isProvisioningStep()
-    {
-        String title = getStepTitle();
-        return title.equals("The system is provisioning the wiki.");
-    }
 }

@@ -42,8 +42,17 @@ public class CreateWikiPageStepUser extends ExtendedViewPage
         return createButton.isEnabled();
     }
 
-    public void create()
+    public WikiHomePage createWithoutTemplate()
     {
         createButton.click();
+        waitUntilPageIsLoaded();
+        return new WikiHomePage();
+    }
+
+    public CreateWikiPageStepProvisioning createWithTemplate()
+    {
+        createButton.click();
+        waitUntilPageIsLoaded();
+        return new CreateWikiPageStepProvisioning();
     }
 }

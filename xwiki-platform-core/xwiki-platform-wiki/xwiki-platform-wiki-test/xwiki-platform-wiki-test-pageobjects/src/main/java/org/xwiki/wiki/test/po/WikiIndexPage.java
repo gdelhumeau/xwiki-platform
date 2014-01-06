@@ -19,6 +19,11 @@
  */
 package org.xwiki.wiki.test.po;
 
+import java.util.List;
+
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+
 /**
  * Represents actions that can be done on the WikiManager.WebHome page.
  *
@@ -26,6 +31,12 @@ package org.xwiki.wiki.test.po;
  */
 public class WikiIndexPage extends ExtendedViewPage
 {
+    @FindBy(id = "wikis")
+    private WebElement wikisTable;
+
+    @FindBy(xpath = "//table[@id='wikis']//td[@class='wikiprettyname linkfield typetext']/a\n")
+    private List<WebElement> wikiPrettyNames;
+
     /**
      * Opens the home page.
      */
@@ -43,5 +54,10 @@ public class WikiIndexPage extends ExtendedViewPage
     public static String getPage()
     {
         return "WebHome";
+    }
+
+    public List<WebElement> getWikiPrettyNames()
+    {
+        return wikiPrettyNames;
     }
 }

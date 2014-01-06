@@ -24,8 +24,11 @@ import org.openqa.selenium.support.FindBy;
 
 public class CreateWikiPageStepProvisioning extends ExtendedViewPage
 {
-    @FindBy(id = "wizard-create")
-    private WebElement createButton;
+    @FindBy(id = "finalize")
+    private WebElement finalizeButton;
+
+    @FindBy(xpath = "//div[@class='wizard-header']/h1/span")
+    private WebElement stepTitle;
 
     public static String getSpace()
     {
@@ -37,13 +40,20 @@ public class CreateWikiPageStepProvisioning extends ExtendedViewPage
         return "CreateNewWiki";
     }
 
-    public boolean isCreateButtonEnabled()
+    public WikiHomePage finalizeCreation()
     {
-        return createButton.isEnabled();
+        finalizeButton.click();
+        waitUntilPageIsLoaded();
+        return new WikiHomePage();
     }
 
-    public void create()
+    public String getStepTitle()
     {
-        createButton.click();
+        return stepTitle.getText();
+    }
+
+    public boolean isFinalizeButtonEnabled()
+    {
+        return finalizeButton.isEnabled();
     }
 }

@@ -19,12 +19,17 @@
  */
 package org.xwiki.wiki.test.ui;
 
+import java.util.List;
+
 import org.junit.Rule;
 import org.junit.Test;
+import org.openqa.selenium.WebElement;
 import org.xwiki.test.ui.AbstractTest;
 import org.xwiki.test.ui.SuperAdminAuthenticationRule;
 import org.xwiki.test.ui.po.editor.WikiEditPage;
 import org.xwiki.wiki.test.po.CreateWikiPage;
+import org.xwiki.wiki.test.po.CreateWikiPageStepProvisioning;
+import org.xwiki.wiki.test.po.CreateWikiPageStepUser;
 import org.xwiki.wiki.test.po.WikiHomePage;
 import org.xwiki.wiki.test.po.WikiIndexPage;
 
@@ -56,13 +61,12 @@ public class WikiTest extends AbstractTest
 
         assertTrue(createWikiPage.isNextStepEnabled());
 
-        createWikiPage.goNextStep();
-        createWikiPage.create();
-        createWikiPage.waitUntilPageIsLoaded();
+        CreateWikiPageStepUser createWikiPageStepUser = createWikiPage.goUserStep();
+        WikiHomePage wikiHomePage = createWikiPageStepUser.createWithoutTemplate();
 
         // Modify the template content
-        WikiHomePage wikiHomePage = new WikiHomePage();
-        WikiEditPage wikiEditPage = wikiHomePage.editWiki();
+        wikiHomePage.edit();
+        WikiEditPage wikiEditPage = new WikiEditPage();
         wikiEditPage.setContent(TEMPLATE_CONTENT);
         wikiEditPage.clickSaveAndView();
         wikiEditPage.waitUntilPageIsLoaded();
@@ -70,6 +74,22 @@ public class WikiTest extends AbstractTest
         // Verify the template is in the list of templates in the wizard
         CreateWikiPage createWikiPage2 = wikiHomePage.createWiki();
         assertTrue(createWikiPage2.getTemplateList().contains("mynewtemplate"));
+
+        // Verify the wiki is in the wiki index page.
+        wikiIndexPage = WikiIndexPage.gotoPage();
+        // Wait for the livetable to generate ajax requests
+        Thread.sleep(500);
+        List<WebElement> wikiPrettyNames = wikiIndexPage.getWikiPrettyNames();
+        boolean found = false;
+        for (WebElement webElement : wikiPrettyNames) {
+            if (webElement.getText().equals("My new template")) {
+                found = true;
+                assertTrue(webElement.getAttribute("href").endsWith("/xwiki/wiki/mynewtemplate/view/Main/WebHome"));
+                break;
+            }
+        }
+        assertTrue(found);
+
     }
 
     @Test
@@ -83,23 +103,22 @@ public class WikiTest extends AbstractTest
         createWikiPage.setTemplate("mynewtemplate");
         createWikiPage.setIsTemplate(false);
         createWikiPage.setDescription("My first wiki");
-        createWikiPage.goNextStep();
-        createWikiPage.create();
-        assertTrue(createWikiPage.isProvisioningStep());
+        CreateWikiPageStepUser createWikiPageStepUser = createWikiPage.goUserStep();
+        CreateWikiPageStepProvisioning createWikiPageStepProvisioning = createWikiPageStepUser.createWithTemplate();
+        assertEquals("The system is provisioning the wiki.", createWikiPageStepProvisioning.getStepTitle());
         // Wait during the provisioning step
         long timeout = System.currentTimeMillis() + 5000;
-        while (!createWikiPage.isFinalizeButtonEnabled() && System.currentTimeMillis() < timeout) {
+        while (!createWikiPageStepProvisioning.isFinalizeButtonEnabled() && System.currentTimeMillis() < timeout) {
             Thread.sleep(100);
         }
         // Verify that the provisioning step is over
-        assertTrue(createWikiPage.isFinalizeButtonEnabled());
+        assertTrue(createWikiPageStepProvisioning.isFinalizeButtonEnabled());
         // Finalize
-        createWikiPage.finalize();
+        WikiHomePage wikiHomePage = createWikiPageStepProvisioning.finalizeCreation();
 
         // Verify the content is the same than in the template
-        WikiHomePage wikiHomePage = new WikiHomePage();
-        WikiEditPage wikiEditPage = wikiHomePage.editWiki();
+        wikiHomePage.edit();
+        WikiEditPage wikiEditPage = new WikiEditPage();
         assertEquals(wikiEditPage.getContent(), TEMPLATE_CONTENT);
-
     }
 }
