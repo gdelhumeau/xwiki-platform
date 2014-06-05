@@ -19,6 +19,10 @@
  */
 package com.xpn.xwiki.web;
 
+import java.util.Enumeration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
 
@@ -44,6 +48,28 @@ public class CommentSaveAction extends XWikiAction
     private DocumentReferenceResolver<String> documentReferenceResolver =
             Utils.getComponent(DocumentReferenceResolver.TYPE_STRING);
 
+    /**
+     * Pattern to get the comment's number.
+     */
+    private final Pattern pattern = Pattern.compile("XWiki.XWikiComments_(\\d+)_comment");
+
+    private int getCommentIdFromRequest(XWikiRequest request)
+    {
+        // Get the comment object
+        Enumeration parameterNames = request.getParameterNames();
+        while (parameterNames.hasMoreElements()) {
+            String parameterName = (String) parameterNames.nextElement();
+            // Matcher
+            Matcher m = pattern.matcher(parameterName);
+            if (m.find()) {
+                String number = m.group(1);
+                return Integer.parseInt(number);
+            }
+        }
+        // hack
+        return -1;
+    }
+
     @Override
     public boolean action(XWikiContext context) throws XWikiException
     {
@@ -62,9 +88,7 @@ public class CommentSaveAction extends XWikiAction
 
         // Edit comment
         try {
-            // Get the comment object
-            int commentId = Integer.parseInt(
-                request.getParameter(COMMENT_FIELD_NAME).replaceAll("Edited comment ", ""));
+            int commentId = getCommentIdFromRequest(request);
             BaseObject commentObj = doc.getXObject(commentClass, commentId);
 
             // Check if the author is the current user
