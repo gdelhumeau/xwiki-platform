@@ -97,9 +97,14 @@ select[size="0"], select[size="1"] {
   }
 }
 
-.xformInline label {
-  text-transform: uppercase;
-  margin-right: 0.5em;
+.xformInline {
+  label {
+    text-transform: uppercase;
+    margin-right: 0.5em;
+  }
+  input[type="text"] {
+    vertical-align: middle;
+  }
 }
 
 .xwiki-form-listclass {
@@ -109,4 +114,11 @@ select[size="0"], select[size="1"] {
 /* Validation messages do not have the place to be displayed at the right of the input field, because the width of the fields is 100%. */
 .LV_validation_message {
   display: block;
+}
+
+// Forms on the navbar ==================================================
+@media screen and (max-width: @screen-xs-max) {
+  .navbar-form {
+    margin: 0 0;
+  }
 }
