@@ -1,0 +1,130 @@
+/* Hamburger icon position and styling */
+.icon-navbar.nav-drawer-container {
+  padding: 0;
+}
+
+.actionmenu .drawer-hamburger {
+  height: inherit;
+  font-size: @navbar-height - @line-height-computed;
+  top: 0;
+  padding: 0; 
+  right: @navbar-padding-horizontal;
+  
+  a {
+    color: @navbar-default-link-color;
+    text-shadow: 1px 1px 10px @navbar-default-bg;
+  }
+}
+
+.actionmenu .drawer-hamburger i {
+    opacity: .85;
+}
+
+.drawer-hamburger, .nav-drawer-container {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .drawer-hamburger {
+    display: block;  
+  }
+  .nav-drawer-container {
+    visibility: hidden;
+  }
+  button.navbar-toggle {
+    display: none;
+  }
+}
+
+/* Drawer colors */
+.drawer-default {
+  background-color: @xwiki-page-content-bg;
+}
+
+.drawer-default .drawer-brand a,
+.drawer-default .drawer-brand a:hover, .drawer-default .drawer-brand a:focus,  {
+  color: @navbar-default-link-color;
+  text-decoration: none;
+}
+
+.drawer-default .drawer-menu-item a,
+.drawer-default .drawer-menu-item a:hover, .drawer-default .drawer-menu-item a:focus {
+  color: @text-color;
+  text-decoration: none;
+}
+
+.drawer-menu-item:hover a:hover {
+  color: inherit;
+}
+
+.drawer-main {
+  box-shadow: -1px 0px 1px rgba(0,0,0,.05);
+}
+
+.drawer-brand {
+  background-color: @navbar-default-bg;
+  padding: 20px 16px;
+  border-bottom: 1px solid @navbar-default-border;
+}
+
+.drawer-brand img {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+}
+
+.drawer-default .drawer-brand a {
+  padding: 0;
+}
+
+.drawer-brand .brand-links, .drawer-brand img {
+  float: left;
+}
+
+.drawer-brand .brand-links {
+  margin-left: 16px;
+  margin-top: 8px;
+}
+
+.drawer-brand .brand-links a {
+  font-size: 14px;
+}
+
+.drawer-brand .brand-links .brand-user {
+  font-weight: 400;
+  //TODO: change
+  color: #009688;
+}
+
+.drawer-default .drawer-menu-item {
+  padding: 13px 0 13px 16px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #333;
+}
+
+.drawer-menu-item-icon {
+  display: inline-block;
+  width: 30px;
+  vertical-align: middle;
+}
+
+.drawer-menu-item-text {
+  display: inline-block;
+  vertical-align: middle;
+  white-space: normal;
+}
+
+.drawer-menu-item:hover {
+  background-color: #eee;
+}
+
+.drawer-menuseparator {
+  border-top: 1px solid #e3e3e3;
+  margin: 12px 0;
+}
+
+.drawer-hamburger {
+  color: white;
+}
+

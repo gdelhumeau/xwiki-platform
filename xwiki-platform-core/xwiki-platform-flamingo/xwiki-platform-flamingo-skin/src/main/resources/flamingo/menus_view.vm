@@ -9,11 +9,20 @@
     
     ## Right menu
     #xwikitopmenurightstart()
-      #template("quicksearch.vm")
-      #template("menus_language.vm")
-      #template("menus_user.vm")
+      ##<div class="navbar-header">
+      <li>
+      <button type="button" class="navbar-form drawer-toggle drawer-hamburger">
+        <span class="sr-only">toggle navigation</span>
+        <a class="icon-navbar nav-drawer-icon"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
+      </button>
+      </li>
+      ##</div>
+      ##template("quicksearch.vm")
+      ##template("menus_language.vm")
+      ##template("menus_user.vm")
     #xwikitopmenurightend()
     
+    #*
     ## Left menu
     #xwikitopmenuleftstart()
       #template("menus_home.vm")
@@ -22,7 +31,10 @@
       #template("menus_page.vm")
       #template("menus_create.vm")
     #xwikitopmenuleftend()
+    *#
     
   ## End of Top Menu
   #xwikitopmenuend()
+  
+  #template("drawer.vm")
 #end
