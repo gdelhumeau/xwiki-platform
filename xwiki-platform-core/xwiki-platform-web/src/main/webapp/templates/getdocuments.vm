@@ -13,6 +13,10 @@ $response.setContentType("application/json")
   #set ($whereQueryPart = "${whereQueryPart} AND doc.space = ?")
   #set ($discard = $queryParams.add($request.space))
 #end
+#if ("$!request.childrenOf" != '')
+  #set ($whereQueryPart = "${whereQueryPart} AND doc.fullName LIKE ?")
+  #set ($discard = $queryParams.add("$!{request.childrenOf}.%"))
+#end
 ##
 ## ORDER
 ##

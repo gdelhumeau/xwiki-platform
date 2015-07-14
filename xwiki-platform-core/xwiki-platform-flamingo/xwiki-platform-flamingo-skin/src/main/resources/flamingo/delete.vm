@@ -1,57 +1,125 @@
+#######################################################
+###              DELETE PAGE ACTION
+###              ------------------
 ###
-### Delete page confirm message
-###
-###
+#######################################################
+##                     HEADER
+#######################################################
 #template("startpage.vm")
 <div class="main">
 <div id="mainContentArea">
 #if($message)
   <div id="xwikimessage">$message</div>
 #end
-#if("$!{request.id}" == '')
-#set($links = $doc.getBacklinks())
-#set($childrenStatement = 'where doc.fullName <> :parentFullName and (doc.parent = :parentFullName or (doc.parent = :parentName and doc.space = :parentSpace))')
-#set($childrenQuery = $services.query.xwql($childrenStatement))
-#set($discard = $childrenQuery.bindValue('parentFullName', $doc.fullName).bindValue('parentName', $doc.name).bindValue('parentSpace', $doc.space))
-#set($children = $childrenQuery.addFilter('unique').execute())
+#######################################################
+##                     GLOBALS
+#######################################################
+#set($fullmsg = '')
 #set($quote = '"')
 #set($hasInlinks = false)
-#set($fullmsg = '')
-#if($links && $links.size() > 0)
-  #set($tmpmsg = '</p><ul>')
-  #foreach($docname in $links)
-    #set($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
-    #set($tmpmsg = "${tmpmsg}<li><a href=${quote}${rdoc.getURL('view')}${quote}>$escapetool.xml(${rdoc.getPlainTitle()})</a></li>")
-  #end
-  #set($tmpmsg = "${tmpmsg}</ul><p class='xwikimessage'>")
-  #set($tmpmsg = $services.localization.render('core.delete.backlinksWarning', [$tmpmsg]))
-  #set($fullmsg = "${fullmsg}${tmpmsg}</p><p class='xwikimessage'>")
-  #set($hasInlinks = true)
+#######################################################
+##                    CONTROLLER
+#######################################################
+#if("$!{request.id}" == '')
+  #getBacklinks()
+  #getChildren()
+  ###getChildren_legacy()
+  #displayConfirmMessage()
+#else ## request.id
+  #displayCompletelyDeleteConfirmMessage()
 #end
-#if($children && $children.size() > 0)
-  #set($tmpmsg = '</p><ul>')
-  #foreach($docname in $children)
-    #set($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
-    #set($tmpmsg = "${tmpmsg}<li><a href=${quote}${rdoc.getURL('view')}${quote}>$escapetool.xml(${rdoc.getPlainTitle()})</a></li>")
+#######################################################
+##                    CHILDREN
+##
+##
+#######################################################
+#macro(getChildren)
+  ##
+  ## List the documents to be deleted using a livetable
+  ##
+  #set ($collist = ['doc.title','doc.date', 'doc.author'])
+  #set ($colprops = {
+    'doc.title' : { 'link' : 'view' },
+    'doc.author' : { 'link' : 'author' }
+  })
+  #set ($urlParameters = "xpage=getdocuments&childrenOf=$escapetool.url($doc.space)&queryFilters=unique")
+  #set ($options = { 
+    'url' : "$doc.getURL('get', $urlParameters)",
+    'translationPrefix' : 'platform.index.',
+    'outputOnlyHtml' : true
+  })
+  ## Grab the output of the livetable macro so we can include it in the confirmation message below
+  #define ($spaceIndexLiveTable)
+  <div class='text-left'>
+    #livetable('deleteSpaceIndex' $collist $colprops $options)
+  </div>
   #end
-  #set($tmpmsg = "${tmpmsg}</ul><p class='xwikimessage'>")
-  #set($tmpmsg = $services.localization.render('core.delete.orphansWarning', [$tmpmsg]))
-  #set($fullmsg = "${fullmsg}${tmpmsg}</p><p class='xwikimessage'>")
-  #set($hasInlinks = true)
+  #if ($hasInlinks)
+    #set ($fullmsg = "${fullmsg}</p><hr /><p>")
+  #end
+  #set ($confirmationMessage = "The following documents are children of the current page: ")
+  #set ($fullmsg = "${fullmsg}</p>$confirmationMessage<p>${spaceIndexLiveTable}</p><p class='xwikimessage'>You can delete them along with the current page or let them there.</p><p class='xwikimessage'>")
+  #set ($hasInlinks = true)
 #end
-#if($xwiki.hasRecycleBin())
-  #if($hasInlinks)
-    #set($fullmsg = "${fullmsg}${services.localization.render('core.recyclebin.confirmWithInlinks')}")
+#######################################################
+##                 LEGACY CHILDREN
+##
+## Get the children document based on the legacy
+## parent/child relationship.
+#######################################################
+#macro(getChildren_legacy)
+  #set($childrenStatement = 'where doc.fullName <> :parentFullName and (doc.parent = :parentFullName or (doc.parent = :parentName and doc.space = :parentSpace))')
+  #set($childrenQuery = $services.query.xwql($childrenStatement))
+  #set($discard = $childrenQuery.bindValue('parentFullName', $doc.fullName).bindValue('parentName', $doc.name).bindValue('parentSpace', $doc.space))
+  #set($children = $childrenQuery.addFilter('unique').execute())
+  #if($children && $children.size() > 0)
+    #set($tmpmsg = '</p><ul>')
+    #foreach($docname in $children)
+      #set($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
+      #set($tmpmsg = "${tmpmsg}<li><a href=${quote}${rdoc.getURL('view')}${quote}>$escapetool.xml(${rdoc.getPlainTitle()})</a></li>")
+    #end
+    #set($tmpmsg = "${tmpmsg}</ul><p class='xwikimessage'>")
+    #set($tmpmsg = $services.localization.render('core.delete.orphansWarning', [$tmpmsg]))
+    #set($fullmsg = "${fullmsg}${tmpmsg}</p><p class='xwikimessage'>")
+  #end
+#end
+#######################################################
+##                 GET BACKLINKS
+##
+## Get the documents having some links to the current 
+## one.
+#######################################################
+#macro(getBacklinks)
+  #set($links = $doc.getBacklinks())
+  #if($links && $links.size() > 0)
+    #set($tmpmsg = '</p><ul>')
+    #foreach($docname in $links)
+      #set($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
+      #set($tmpmsg = "${tmpmsg}<li><a href=${quote}${rdoc.getURL('view')}${quote}>$escapetool.xml(${rdoc.getPlainTitle()})</a></li>")
+    #end
+    #set($tmpmsg = "${tmpmsg}</ul><p class='xwikimessage'>")
+    #set($tmpmsg = $services.localization.render('core.delete.backlinksWarning', [$tmpmsg]))
+    #set($fullmsg = "${fullmsg}${tmpmsg}</p><p class='xwikimessage'>")
+    #set($hasInlinks = true)
+  #end
+#end
+#######################################################
+##              DISPLAY CONFIRM MESSAGE
+#######################################################
+#macro(displayConfirmMessage)
+  #if($xwiki.hasRecycleBin())
+    #if($hasInlinks)
+      #set($fullmsg = "${fullmsg}<strong>${services.localization.render('core.recyclebin.confirmWithInlinks')}</strong>")
+    #else
+      #set($fullmsg = $services.localization.render('core.recyclebin.confirm'))
+    #end
   #else
-    #set($fullmsg = $services.localization.render('core.recyclebin.confirm'))
+    #if($hasInlinks)
+      #set($fullmsg = "${fullmsg}<strong>${services.localization.render('core.delete.confirmWithInlinks')}</strong>")
+    #else
+      #set($fullmsg = $services.localization.render('core.delete.confirm'))
+    #end
   #end
-#else
-  #if($hasInlinks)
-    #set($fullmsg = "${fullmsg}${services.localization.render('core.delete.confirmWithInlinks')}")
-  #else
-    #set($fullmsg = $services.localization.render('core.delete.confirm'))
-  #end
-#end
   #xwikimessageboxstart($services.localization.render('core.delete') $fullmsg)
     <form action="$doc.getURL('delete', "$!{languageparams}")" method="post">
       <div class="hidden">
@@ -61,18 +129,25 @@
           <input type="hidden" name="xredirect" value="$!{escapetool.xml($request.xredirect)}"/>
         #end
       </div>
-      <div class="buttonwrapper"> 
-        <input type="submit" class="button" value="$services.localization.render('yes')"/>
-        #if("$!{request.xredirect}" != '')
-          #set($cancelUrl = "$request.xredirect")
-        #else
-          #set($cancelUrl = $doc.getURL())
-        #end
-        <a class="secondary button" href="$!{escapetool.xml(${cancelUrl})}">$services.localization.render('no')</a>
-      </div>
+      <p><label>Please repeat the name of the document here: <input class="required" name="deleteConfirm" value="" type="text"></label></p>
+      <p><label><input type="checkbox" name="deleteChildren" /> Delete children too</label> </p>
+      <button class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> $services.localization.render('yes'), please delete this page</button>
+      #if("$!{request.xredirect}" != '')
+        #set($cancelUrl = "$request.xredirect")
+      #else
+        #set($cancelUrl = $doc.getURL())
+      #end
+      <a class="btn btn-primary" href="$!{escapetool.xml(${cancelUrl})}">$services.localization.render('no'), take me back!</a>
     </form>
   #xwikimessageboxend()
-#else ## request.id
+#end
+#######################################################
+##              DISPLAY CONFIRM MESSAGE
+##
+## Display a confirmation message when the user wants 
+## to delete a page from the recycle bin.
+#######################################################
+#macro(displayCompletelyDeleteConfirmMessage)
   #xwikimessageboxstart($services.localization.render('core.delete') $services.localization.render('core.recyclebin.completelyDeleteConfirm'))
     <form action="$xwiki.relativeRequestURL" method="post">
       <div class="hidden">
@@ -94,6 +169,9 @@
     </form>
   #xwikimessageboxend()
 #end
+#######################################################
+##                     FOOTER
+#######################################################
 <div class="clearfloats"></div>
 </div>## mainContentArea
 </div>## main

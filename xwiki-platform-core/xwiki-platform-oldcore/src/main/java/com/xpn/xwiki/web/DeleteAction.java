@@ -19,7 +19,12 @@
  */
 package com.xpn.xwiki.web;
 
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
+import org.xwiki.query.Query;
+import org.xwiki.query.QueryException;
+import org.xwiki.query.QueryManager;
 
 import com.xpn.xwiki.XWiki;
 import com.xpn.xwiki.XWikiContext;
@@ -37,6 +42,16 @@ public class DeleteAction extends XWikiAction
 {
     /** confirm parameter name. */
     private static final String CONFIRM_PARAM = "confirm";
+    
+    private QueryManager queryManager = null;
+    
+    private QueryManager getQueryManager()
+    {
+        if (queryManager == null) {
+            queryManager = Utils.getComponent(QueryManager.class);
+        }
+        return queryManager;
+    }
 
     /**
      * {@inheritDoc}
@@ -61,41 +76,14 @@ public class DeleteAction extends XWikiAction
 
         String sindex = request.getParameter("id");
         if (sindex != null && xwiki.hasRecycleBin(context)) {
-            long index = Long.parseLong(sindex);
-            XWikiDeletedDocument dd = xwiki.getRecycleBinStore().getDeletedDocument(doc, index, context, true);
-            // If the document hasn't been previously deleted (i.e. it's not in the deleted document store) then
-            // don't try to delete it and instead redirect to the view page.
-            if (dd != null) {
-                DeletedDocument ddapi = new DeletedDocument(dd, context);
-                if (!ddapi.canDelete()) {
-                    throw new XWikiException(XWikiException.MODULE_XWIKI_ACCESS,
-                        XWikiException.ERROR_XWIKI_ACCESS_DENIED,
-                        "You are not allowed to delete a document from the trash "
-                            + "immediately after it has been deleted from the wiki");
-                }
-                if (!dd.getFullName().equals(doc.getFullName())) {
-                    throw new XWikiException(XWikiException.MODULE_XWIKI_APP,
-                        XWikiException.ERROR_XWIKI_APP_URL_EXCEPTION,
-                        "The specified trash entry does not match the current document");
-                }
-                xwiki.getRecycleBinStore().deleteFromRecycleBin(doc, index, context, true);
-            }
-            sendRedirect(response, Utils.getRedirect("view", context));
+            deleteFromRecycleBin(sindex, context);
             redirected = true;
         } else if (doc.isNew()) {
             // Redirect the user to the view template so that he gets the "document doesn't exist" dialog box.
             sendRedirect(response, Utils.getRedirect("view", context));
             redirected = true;
         } else {
-            // Delete to recycle bin
-            String language = xwiki.getLanguagePreference(context);
-            if (StringUtils.isEmpty(language) || language.equals(doc.getDefaultLanguage())) {
-                xwiki.deleteAllDocuments(doc, context);
-            } else {
-                // Only delete the translation
-                XWikiDocument tdoc = doc.getTranslatedDocument(language, context);
-                xwiki.deleteDocument(tdoc, context);
-            }
+            deleteToRecycleBin(context);
         }
         if (!redirected) {
             // If a xredirect param is passed then redirect to the page specified instead of going to the default
@@ -107,6 +95,68 @@ public class DeleteAction extends XWikiAction
             }
         }
         return !redirected;
+    }
+    
+    private void deleteToRecycleBin(XWikiContext context) throws XWikiException
+    {
+        XWiki xwiki = context.getWiki();
+        XWikiRequest request = context.getRequest();
+        XWikiDocument doc = context.getDoc();
+        
+        // Delete children of the current document or no
+        String deleteChildren = request.getParameter("deleteChildren");
+        if (StringUtils.isNotEmpty(deleteChildren) && !"0".equals(deleteChildren)) {
+            try {
+                // Get the children of the document
+                String xwql = "where doc.fullName like :parent";
+                Query query = getQueryManager().createQuery(xwql, Query.XWQL);
+                query.bindValue("parent", String.format("%s.%", doc.getSpace()));
+                List<String> children = query.execute();
+                for (String child : children) {
+                    xwiki.deleteAllDocuments(xwiki.getDocument(child, context), context);
+                }
+            } catch (QueryException e) {
+                throw new XWikiException(
+                        String.format("Unable to get the children of document [%s]", doc.toString()), e);
+            }
+        }
+        
+        String language = xwiki.getLanguagePreference(context);
+        if (StringUtils.isEmpty(language) || language.equals(doc.getDefaultLanguage())) {
+            xwiki.deleteAllDocuments(doc, context);
+        } else {
+            // Only delete the translation
+            XWikiDocument tdoc = doc.getTranslatedDocument(language, context);
+            xwiki.deleteDocument(tdoc, context);
+        }
+    }
+    
+    private void deleteFromRecycleBin(String sindex, XWikiContext context) throws XWikiException
+    {
+        XWiki xwiki = context.getWiki();
+        XWikiDocument doc = context.getDoc();
+        XWikiResponse response = context.getResponse();
+     
+        long index = Long.parseLong(sindex);
+        XWikiDeletedDocument dd = xwiki.getRecycleBinStore().getDeletedDocument(doc, index, context, true);
+        // If the document hasn't been previously deleted (i.e. it's not in the deleted document store) then
+        // don't try to delete it and instead redirect to the view page.
+        if (dd != null) {
+            DeletedDocument ddapi = new DeletedDocument(dd, context);
+            if (!ddapi.canDelete()) {
+                throw new XWikiException(XWikiException.MODULE_XWIKI_ACCESS,
+                        XWikiException.ERROR_XWIKI_ACCESS_DENIED,
+                        "You are not allowed to delete a document from the trash "
+                                + "immediately after it has been deleted from the wiki");
+            }
+            if (!dd.getFullName().equals(doc.getFullName())) {
+                throw new XWikiException(XWikiException.MODULE_XWIKI_APP,
+                        XWikiException.ERROR_XWIKI_APP_URL_EXCEPTION,
+                        "The specified trash entry does not match the current document");
+            }
+            xwiki.getRecycleBinStore().deleteFromRecycleBin(doc, index, context, true);
+        }
+        sendRedirect(response, Utils.getRedirect("view", context));
     }
 
     /**
