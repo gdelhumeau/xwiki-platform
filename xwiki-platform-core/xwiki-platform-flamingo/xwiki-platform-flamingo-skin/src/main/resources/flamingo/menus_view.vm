@@ -9,15 +9,15 @@
     
     ## Right menu
     #xwikitopmenurightstart()
-      ##<div class="navbar-header">
-      <li>
-      <button type="button" class="navbar-form drawer-toggle drawer-hamburger">
-        <span class="sr-only">toggle navigation</span>
-        <a class="icon-navbar nav-drawer-icon"><span class="glyphicon glyphicon-menu-hamburger"></span></a>
-      </button>
+      #template("menus_create.vm")
+      #template("quicksearch.vm")
+      <li class="icon-navbar">
+        <a><span class="glyphicon glyphicon-search" data-toggle="collapse" href="#globalsearch"></span></a>
       </li>
-      ##</div>
-      ##template("quicksearch.vm")
+      <li>
+        <a class="icon-navbar drawer-toggle"><span class="sr-only">Toggle navigation</span><span class="glyphicon glyphicon-menu-hamburger"></span></a>
+      </li>
+
       ##template("menus_language.vm")
       ##template("menus_user.vm")
     #xwikitopmenurightend()

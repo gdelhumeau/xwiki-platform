@@ -1,48 +1,43 @@
-/* Hamburger icon position and styling */
-.icon-navbar.nav-drawer-container {
-  padding: 0;
+/* Nav bar */
+/* TODO: move this part on an other file */
+.icon-navbar {
+  cursor: pointer;
 }
 
-.actionmenu .drawer-hamburger {
-  height: inherit;
-  font-size: @navbar-height - @line-height-computed;
-  top: 0;
-  padding: 0; 
-  right: @navbar-padding-horizontal;
+.globalsearch {
+  input {
+    background-color: @navbar-default-bg;
+    color: @navbar-default-color;
+    border: 0;
+    border-bottom: 1px solid @navbar-default-color;
+    border-radius: 0;
+    
+    &:focus {
+      border: 0;
+      border-bottom: 1px solid darken(@navbar-default-color, 60%);
+      box-shadow: 0 0 0 black inset, 0 0 0 black;
+      outline: 0;
+      outline-offset: 0;
+    }
+  }
+}
+
+#contentmenu .dropdown {
+  font-size: 28px;
+  width: 40px;
   
   a {
-    color: @navbar-default-link-color;
-    text-shadow: 1px 1px 10px @navbar-default-bg;
+    color: black;
   }
 }
 
-.actionmenu .drawer-hamburger i {
-    opacity: .85;
-}
-
-.drawer-hamburger, .nav-drawer-container {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .drawer-hamburger {
-    display: block;  
-  }
-  .nav-drawer-container {
-    visibility: hidden;
-  }
-  button.navbar-toggle {
-    display: none;
-  }
-}
-
-/* Drawer colors */
+/* Drawer */
 .drawer-default {
   background-color: @xwiki-page-content-bg;
 }
 
-.drawer-default .drawer-brand a,
-.drawer-default .drawer-brand a:hover, .drawer-default .drawer-brand a:focus,  {
+.drawer-default .drawer-brand a
+.drawer-default .drawer-brand a:hover, .drawer-default .drawer-brand a:focus {
   color: @navbar-default-link-color;
   text-decoration: none;
 }
@@ -123,8 +118,3 @@
   border-top: 1px solid #e3e3e3;
   margin: 12px 0;
 }
-
-.drawer-hamburger {
-  color: white;
-}
-
