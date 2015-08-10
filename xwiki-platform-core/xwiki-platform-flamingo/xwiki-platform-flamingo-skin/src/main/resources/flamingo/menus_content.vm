@@ -5,6 +5,9 @@
   #if ($hasEdit && !$isReadOnly)
     #displayEditMenu()
   #end
+  <div class="dropdown" style="display: inline-block;">
+    <a href="$doc.getURL('create')"><span class="glyphicon glyphicon-plus"></span></a>
+  </div>
   #if (!$doc.isNew())
     #diplayOptionsMenu()
     #exportModal()

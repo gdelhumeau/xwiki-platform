@@ -62,14 +62,23 @@
 // Navbar avatar ==========================================================
 
 .navbar-avatar {
+  @avatar-size: 24px;
+  padding: ((@navbar-height - @avatar-size) / 2) (@navbar-padding-horizontal / 2);
+  
   > img {
-    @avatar-size: 24px;
+    .img-circle();
     border-radius: @thumbnail-border-radius;
     height: @avatar-size;
     margin-top: -@navbar-padding-horizontal+@navbar-height/2-@avatar-size/2;
     vertical-align: middle;
     width: @avatar-size;
   }
+}
+
+// Icon in a navbar  ======================================================
+
+.icon-navbar {
+  cursor: pointer;
 }
 
 // Navbar dropdown ========================================================
@@ -160,3 +169,15 @@
     .navbar-dropdown(@navbar-default-bg, @navbar-default-link-hover-bg, @navbar-default-link-active-bg)
   }
 }
+
+// Content menu  ======================================================
+
+#contentmenu .dropdown {
+  font-size: 18px;
+  width: 45px;
+  
+  a {
+    color: black;
+  }
+}
+

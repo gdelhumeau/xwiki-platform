@@ -65,6 +65,12 @@
       #if ($xwiki.exists($homeUserIndexRef))
         #drawerItem($xwiki.getURL($homeUserIndexRef), 'user', $services.localization.render('xe.panels.quicklinks.userdirectory'))
       #end
+      ## CREATE WIKI
+      #if ($isWikiAPIAvailable && $isWikiUIAvailable && $hasCreateWiki)
+        #drawerSeparator()
+        #set ($createWikiDocReference = $services.model.createDocumentReference('xwiki', 'WikiManager', 'CreateWiki'))
+        #drawerItem($xwiki.getURL($createWikiDocReference), 'plus', $services.localization.render('core.menu.create.wiki'))
+      #end
     </ul>
   </nav>
 </div>
