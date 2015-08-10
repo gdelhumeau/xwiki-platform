@@ -9,6 +9,7 @@
     
     ## Right menu
     #xwikitopmenurightstart()
+      #displayUserAvatar()
       #template("quicksearch.vm")
       <li class="icon-navbar">
         <a><span class="glyphicon glyphicon-search" data-toggle="collapse" href="#globalsearch"></span></a>
@@ -16,13 +17,6 @@
       <li>
         <a class="icon-navbar drawer-toggle"><span class="sr-only">Toggle navigation</span><span class="glyphicon glyphicon-menu-hamburger"></span></a>
       </li>
-      
-      #getUserAvatarURL($xcontext.user, $currentUserAvatar, 32)
-      #if($currentUserAvatar.specified)
-        <li class="navbar-avatar">
-          #smallUserAvatar($xcontext.user)
-        </li>
-      #end
 
       ##template("menus_language.vm")
       ##template("menus_user.vm")
@@ -43,4 +37,11 @@
   #xwikitopmenuend()
   
   #template("drawer.vm")
+#end
+##
+#macro(displayUserAvatar)
+  #getUserAvatarURL($xcontext.user, $currentUserAvatar, 32)
+  <li class="navbar-avatar">
+    <a href="$xwiki.getURL($xcontext.user)" class="icon-navbar">#smallUserAvatar($xcontext.user)</a>
+  </li>
 #end

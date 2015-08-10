@@ -5,9 +5,9 @@
   #if ($hasEdit && !$isReadOnly)
     #displayEditMenu()
   #end
-  <div class="dropdown" style="display: inline-block;">
-    <a href="$doc.getURL('create')"><span class="glyphicon glyphicon-plus"></span></a>
-  </div>
+  #if ($hasCreatePage)
+    #displayCreateButton()
+  #end
   #if (!$doc.isNew())
     #diplayOptionsMenu()
     #exportModal()
@@ -17,31 +17,37 @@
   #end
 </div>
 ###########################################
+##        DISPLAY CREATE BUTTON
+###########################################
+#macro(displayCreateButton)
+  <div class="dropdown">
+    <a href="$doc.getURL('create')"><span class="glyphicon glyphicon-plus"></span></a>
+  </div>
+#end
+###########################################
 ##         DISPLAY EDIT MENU
 ###########################################
 #macro(displayEditMenu)
-  #if ($isAdvancedUser)
-    <div class="dropdown" style="display: inline-block">
-      <a href="" data-toggle="dropdown"><span class="glyphicon glyphicon-pencil"></span></a>
-      <ul class="dropdown-menu">
-        ## Check if the WYSIWYG supports the current document's syntax and if so add a menu entry to edit the current
-        ## document with the WYSIWYG editor.
-        #if ($services.wysiwyg.isSyntaxSupported($tdoc.syntax.toIdString()) || $tdoc.syntax.toIdString() == 'xwiki/1.0')
-          #submenuitem($doc.getURL('edit', "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=wysiwyg") $services.localization.render('core.menu.edit.wysiwyg') 'tmEditWysiwyg', '', 'pencil')
-        #end
-        #submenuitem($doc.getURL('edit', "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=wiki") $services.localization.render('core.menu.edit.wiki') 'tmEditWiki', '', 'wrench')
-        #submenuitem($doc.getURL($editaction, "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=inline") $services.localization.render('core.menu.edit.inline') 'tmEditInline', '', 'list-alt')
-      </ul>
-    </div>
-  #else
-    <a href="$doc.getURL($doc.getDefaultEditMode(), $!languageparams)"><span class="glyphicon glyphicon-pencil"></span></a>
-  #end
+  <div class="dropdown">
+    <a href="$doc.getURL($doc.getDefaultEditMode(), $!languageparams)" data-toggle="dropdown" id="tmEdit"><span class="glyphicon glyphicon-pencil"></span></a>
+    #if ($isAdvancedUser)
+    <ul class="dropdown-menu">
+      ## Check if the WYSIWYG supports the current document's syntax and if so add a menu entry to edit the current
+      ## document with the WYSIWYG editor.
+      #if ($services.wysiwyg.isSyntaxSupported($tdoc.syntax.toIdString()) || $tdoc.syntax.toIdString() == 'xwiki/1.0')
+        #submenuitem($doc.getURL('edit', "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=wysiwyg") $services.localization.render('core.menu.edit.wysiwyg') 'tmEditWysiwyg', '', 'pencil')
+      #end
+      #submenuitem($doc.getURL('edit', "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=wiki") $services.localization.render('core.menu.edit.wiki') 'tmEditWiki', '', 'wrench')
+      #submenuitem($doc.getURL('edit', "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=inline") $services.localization.render('core.menu.edit.inline') 'tmEditInline', '', 'list-alt')
+    </ul>
+    #end
+  </div>
 #end
 ###########################################
 ##         DISPLAY ACTIONS MENU
 ###########################################
 #macro(diplayOptionsMenu)
-  <div class="dropdown" style="display: inline-block">
+  <div class="dropdown">
     <a href="" data-toggle="dropdown"><span class="glyphicon glyphicon-option-vertical"></span></a>
     <ul class="dropdown-menu">
       ## Export
@@ -84,7 +90,7 @@
 #macro(addEditKeyboardShortcuts)
   <script type="text/javascript">
   //<![CDATA[
-    shortcut.add("$services.localization.render('core.shortcuts.view.edit')",function() { location.href=$('tmEdit').down('a').href; }, { 'type':'keypress', 'propagate':false, 'disable_in_input':true });
+    shortcut.add("$services.localization.render('core.shortcuts.view.edit')",function() { location.href=$('tmEdit').href; }, { 'type':'keypress', 'propagate':false, 'disable_in_input':true });
     #if($isAdvancedUser)
       shortcut.add("$services.localization.render('core.shortcuts.view.wiki')",function() { location.href=$('tmEditWiki').href; }, { 'type':'keypress', 'propagate':false, 'disable_in_input':true });
       shortcut.add("$services.localization.render('core.shortcuts.view.wysiwyg')",function() { location.href=$('tmEditWysiwyg').href; }, { 'type':'keypress', 'propagate':false, 'disable_in_input':true });
