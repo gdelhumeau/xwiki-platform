@@ -26,6 +26,13 @@
       float: right;
     }
   }
+  .navbar-form {
+    margin-left: 0;
+    margin-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    .box-shadow(none);
+  }
   @media (max-width: @screen-sm-min) {
     .dropdown-menu .divider {
       background-color: @navbar-default-border;
@@ -38,12 +45,18 @@
     .input-group {
       width: 15em;
     }
+    
+    .btn {
+      margin-bottom: 0;
+    }
   }
 
   .btn {
     border: 1px solid lighten(@btn-primary-bg, 10%);
     box-shadow: none;
     height: @input-height-base;
+    margin-left: -@navbar-padding-horizontal;
+    margin-top: 0;
     &:hover,
     &:focus {
       border: 1px solid lighten(@btn-primary-bg, 10%);
