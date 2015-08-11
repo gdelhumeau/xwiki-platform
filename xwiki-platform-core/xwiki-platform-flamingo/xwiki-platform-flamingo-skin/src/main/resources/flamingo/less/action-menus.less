@@ -9,14 +9,21 @@
     margin-bottom: 0;
   }
   .navbar-header {
+    float: left;
     min-width: percentage((1 / @grid-columns));
-    text-align: center;
   }
   .navbar-brand {
     float: none;
     img {
       height: @navbar-height;
       display: inline;
+    }
+  }
+  
+  .navbar-nav {
+    float: right;
+    > li {
+      float: right;
     }
   }
   @media (max-width: @screen-sm-min) {
@@ -63,10 +70,10 @@
 
 .navbar-avatar {
   > a > img {
-    @avatar-size: 24px;
+    @avatar-size: floor(ceil(@navbar-height/2)/2)*2;
     border-radius: @thumbnail-border-radius;
     height: @avatar-size;
-    margin-top: -@navbar-padding-horizontal+@navbar-height/2-@avatar-size/2;
+    margin-top: -@navbar-padding-vertical+@navbar-height/2-@avatar-size/2;
     vertical-align: middle;
     width: @avatar-size;
   }

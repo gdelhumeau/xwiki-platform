@@ -21,7 +21,7 @@
 ###########################################
 #macro(displayCreateButton)
   <div class="dropdown">
-    <a href="$doc.getURL('create')"><span class="glyphicon glyphicon-plus"></span></a>
+    <a href="$doc.getURL('create')" role="button"><span class="glyphicon glyphicon-plus"></span></a>
   </div>
 #end
 ###########################################
@@ -29,7 +29,7 @@
 ###########################################
 #macro(displayEditMenu)
   <div class="dropdown">
-    <a href="$doc.getURL($doc.getDefaultEditMode(), $!languageparams)" data-toggle="dropdown" id="tmEdit"><span class="glyphicon glyphicon-pencil"></span></a>
+    <a href="$doc.getURL($doc.getDefaultEditMode(), $!languageparams)" #if ($isAdvancedUser)data-toggle="dropdown"#end id="tmEdit" role="button"><span class="glyphicon glyphicon-pencil"></span></a>
     #if ($isAdvancedUser)
     <ul class="dropdown-menu">
       ## Check if the WYSIWYG supports the current document's syntax and if so add a menu entry to edit the current
@@ -48,7 +48,7 @@
 ###########################################
 #macro(diplayOptionsMenu)
   <div class="dropdown">
-    <a href="" data-toggle="dropdown"><span class="glyphicon glyphicon-option-vertical"></span></a>
+    <a href="" data-toggle="dropdown" role="button"><span class="glyphicon glyphicon-option-vertical"></span></a>
     <ul class="dropdown-menu">
       ## Export
       #submenuitem('' $services.localization.render('core.menu.export') 'tmExport', '', 'download-alt', 'data-toggle="modal" data-target="#exportModal"')
