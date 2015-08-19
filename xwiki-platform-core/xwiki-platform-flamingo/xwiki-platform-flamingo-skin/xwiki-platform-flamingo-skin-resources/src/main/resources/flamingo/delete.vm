@@ -8,12 +8,10 @@
 #template("startpage.vm")
 <div class="main">
 <div id="mainContentArea">
-#set($docName = $doc.name)
-#if ($doc.name == 'WebHome')
-  ## Non terminal document
-  #set($docName = $doc.space)
-#end
-<h1>Delete Page: $docName</h1>
+  #set($quote = '"')
+  #set($titleToDisplay = $services.localization.render('core.delete.title', ["<a href=${quote}$doc.getURL('view')${quote}>$doc.plainTitle</a>"]))
+  <div class="xcontent">
+  #template('contentheader.vm')
 #######################################################
 ##                     GLOBALS
 #######################################################
@@ -23,13 +21,40 @@
 #######################################################
 ##                    CONTROLLER
 #######################################################
-#if("$!{request.id}" == '')
+#if("$!{request.jobId}" == '')
+  #if("$!{request.id}" == '')
+    #displayConfirmationPage()
+  #else ## request.id means that we are deleting a document from the recycle bin
+    #displayCompletelyDeleteConfirmMessage()
+  #end
+#else
+  #displayProgressBar()
+#end
+#######################################################
+##            DISPLAY CONFIRMATION PAGE
+#######################################################
+#macro(displayConfirmationPage)
+  <form action="$doc.getURL('delete', "$!{languageparams}")" method="post">
   #getChildren()
   #getBacklinks()
-  ##getChildren_legacy()
+  #getChildren_legacy()
   #displayConfirmMessage()
-#else ## request.id
-  #displayCompletelyDeleteConfirmMessage()
+  </form>
+#end
+#######################################################
+##              DISPLAY PROGRESS BAR
+#######################################################
+#macro(displayProgressBar)
+  #set($discard = $xwiki.jsfx.use('delete.js', true))
+  #set($discard = $xwiki.ssfx.use('uicomponents/extension/extension.css', true))
+  #set($jobId = $request.jobId)
+  <div class="ui-progress" id="delete-progress-bar-container">
+    <p>$services.localization.render('core.delete.waitmessage')</p>
+    <div class="ui-progress-background">
+      <div class="ui-progress-bar green" id="delete-progress-bar" data-job-id="$jobId" data-progress="0"></div>
+    </div>
+  </div>
+  <p class="successmessage hidden" id="successMessage">$services.localization.render('core.delete.success')</p>
 #end
 #######################################################
 ##                  DISPLAY PANEL
@@ -82,24 +107,26 @@
 ## parent/child relationship.
 #######################################################
 #macro(getChildren_legacy)
-  #set($childrenStatement = 'where doc.fullName <> :parentFullName and (doc.parent = :parentFullName or (doc.parent = :parentName and doc.space = :parentSpace))')
-  #set($childrenQuery = $services.query.xwql($childrenStatement))
-  #set($discard = $childrenQuery.bindValue('parentFullName', $doc.fullName).bindValue('parentName', $doc.name).bindValue('parentSpace', $doc.space))
-  #set($children = $childrenQuery.addFilter('unique').execute())
-  #if($children && $children.size() > 0)
-    #define($heading)
-      <strong>Orphans</strong> ($children.size())
-    #end
-    #define($body)
-      #set($tmpmsg = '<ul>')
-      #foreach($docname in $children)
-        #set($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
-        #set($tmpmsg = "${tmpmsg}<li><a href=${quote}${rdoc.getURL('view')}${quote}>$escapetool.xml(${rdoc.getPlainTitle()})</a></li>")
+  #if($services.parentchild.isParentChildMechanismEnabled())
+    #set($childrenStatement = 'where doc.fullName <> :parentFullName and (doc.parent = :parentFullName or (doc.parent = :parentName and doc.space = :parentSpace))')
+    #set($childrenQuery = $services.query.xwql($childrenStatement))
+    #set($discard = $childrenQuery.bindValue('parentFullName', $doc.fullName).bindValue('parentName', $doc.name).bindValue('parentSpace', $doc.space))
+    #set($children = $childrenQuery.addFilter('unique').execute())
+    #if($children && $children.size() > 0)
+      #define($heading)
+        <strong>Orphans</strong> ($children.size())
       #end
-      #set($tmpmsg = "${tmpmsg}</ul>")
-      $services.localization.render('core.delete.orphansWarning', [$tmpmsg])
+      #define($body)
+        #set($tmpmsg = '<ul>')
+        #foreach($docname in $children)
+          #set($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
+          #set($tmpmsg = "${tmpmsg}<li><a href=${quote}${rdoc.getURL('view')}${quote}>$escapetool.xml(${rdoc.getPlainTitle()})</a></li>")
+        #end
+        #set($tmpmsg = "${tmpmsg}</ul>")
+        $services.localization.render('core.delete.orphansWarning', [$tmpmsg])
+      #end
+      #displayPanel('panel-legacy-children', 'panel-default', $heading, $body)
     #end
-    #displayPanel('panel-legacy-children', 'panel-default', $heading, $body)
   #end
 #end
 #######################################################
@@ -112,17 +139,21 @@
   #set($links = $doc.getBacklinks())
   #if($links && $links.size() > 0)
     #define($heading)
-      <input name="updateBacklinks" id="updateBacklinks" type="checkbox" /><label for="updateBacklinks">Update backlinks</label> ($links.size())
+     <strong>Backlinks</strong> ($links.size())
     #end
     #define($body)
-      <ul>
-      #foreach($docname in $links)
-        #set($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
-        <li><a href="${rdoc.getURL('view')}">$escapetool.xml(${rdoc.getPlainTitle()})</a></li>
+      #define($tmpmsg)
+        <ul>
+        #foreach($docname in $links)
+          #set($rdoc = $xwiki.getDocument($docname).getTranslatedDocument())
+          <li><a href="${rdoc.getURL('view')}">$escapetool.xml(${rdoc.getPlainTitle()})</a></li>
+        #end
+        </ul>
       #end
-      </ul>
+      $services.localization.render('core.delete.backlinksWarning', [$tmpmsg])
     #end
     #displayPanel('panel-backlinks', 'panel-default', $heading, $body)
+    #set($hasInlinks = true)
   #end
 #end
 #######################################################
@@ -142,24 +173,21 @@
       #set($fullmsg = $services.localization.render('core.delete.confirm'))
     #end
   #end
-  #xwikimessageboxstart($services.localization.render('core.delete') $fullmsg)
-    <form action="$doc.getURL('delete', "$!{languageparams}")" method="post">
-      <div class="hidden">
-        <input type="hidden" name="form_token" value="$!{services.csrf.getToken()}" />
-        <input type="hidden" name="confirm" value="1"/>
-        #if("$!{request.xredirect}" != '')
-          <input type="hidden" name="xredirect" value="$!{escapetool.xml($request.xredirect)}"/>
-        #end
-      </div>
-      <button class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> $services.localization.render('yes'), please delete this page</button>
-      #if("$!{request.xredirect}" != '')
-        #set($cancelUrl = "$request.xredirect")
-      #else
-        #set($cancelUrl = $doc.getURL())
-      #end
-      <a class="btn btn-primary" href="$!{escapetool.xml(${cancelUrl})}">$services.localization.render('no'), take me back!</a>
-    </form>
-  #xwikimessageboxend()
+  <p>$fullmsg</p>
+  <div class="hidden">
+    <input type="hidden" name="form_token" value="$!{services.csrf.getToken()}" />
+    <input type="hidden" name="confirm" value="1"/>
+    #if("$!{request.xredirect}" != '')
+      <input type="hidden" name="xredirect" value="$!{escapetool.xml($request.xredirect)}"/>
+    #end
+  </div>
+  <button class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span> $services.localization.render('yes'), please delete this page</button>
+  #if("$!{request.xredirect}" != '')
+    #set($cancelUrl = "$request.xredirect")
+  #else
+    #set($cancelUrl = $doc.getURL())
+  #end
+  <a class="btn btn-primary" href="$!{escapetool.xml(${cancelUrl})}">$services.localization.render('no'), take me back!</a>
 #end
 #######################################################
 ##              DISPLAY CONFIRM MESSAGE
@@ -193,6 +221,7 @@
 ##                     FOOTER
 #######################################################
 <div class="clearfloats"></div>
+</div>
 </div>## mainContentArea
 </div>## main
 #template("endpage.vm")
