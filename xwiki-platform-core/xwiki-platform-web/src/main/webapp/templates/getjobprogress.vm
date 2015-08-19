@@ -1,0 +1,10 @@
+#set ($discard = $response.setContentType('application/json'))
+#set ($jobId = [])
+#foreach ($s in $request.jobId.split('/'))
+  ## Convert the jobId to a list of strings
+  #set($discard = $jobId.add($s))
+#end
+#set ($jobStatus = $services.job.getJobStatus($jobId))
+#set ($map = { 'progress': $jobStatus.progress.offset })
+$jsontool.serialize($map)
+
