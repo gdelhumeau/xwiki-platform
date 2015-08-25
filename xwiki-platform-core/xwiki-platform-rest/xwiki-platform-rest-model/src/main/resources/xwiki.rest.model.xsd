@@ -280,6 +280,22 @@
     </sequence>
   </complexType>
   
+  <complexType name="LogEvent">
+    <sequence>
+      <element name="level" type="string"></element>
+      <element name="date" type="dateTime"></element>
+      <element name="message" type="string"></element>
+      <element name="formattedMessage" type="string"></element>
+      <element name="argument" type="string" minOccurs="0" maxOccurs="unbounded"></element>
+    </sequence>
+  </complexType>
+
+  <complexType name="Log">
+    <sequence>
+      <element name="logEvent" type="xwiki:LogEvent" minOccurs="0" maxOccurs="unbounded"></element>
+    </sequence>
+  </complexType>
+  
   <complexType name="JobStatus">
     <complexContent>
       <extension base="xwiki:LinkCollection">
@@ -289,6 +305,7 @@
           <element name="progress" type="xwiki:JobProgress"></element>
           <element name="startDate" type="dateTime"></element>
           <element name="endDate" type="dateTime"></element>
+          <element name="log" type="xwiki:Log"></element>
         </sequence>
       </extension>
     </complexContent>

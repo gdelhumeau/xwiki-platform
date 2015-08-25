@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.suigeneris.jrcs.rcs.Version;
+import org.xwiki.logging.event.LogEvent;
 import org.xwiki.rest.Relations;
 import org.xwiki.rest.XWikiRestException;
 import org.xwiki.rest.model.jaxb.Attachment;
@@ -773,6 +774,25 @@ public class DomainObjectFactory
             link.setRel(Relations.SELF);
             status.getLinks().add(link);
         }
+        
+        // Add log
+        org.xwiki.rest.model.jaxb.Log log = objectFactory.createLog();
+        for (LogEvent logEvent : jobStatus.getLog()) {
+            org.xwiki.rest.model.jaxb.LogEvent event = objectFactory.createLogEvent();
+            event.setLevel(logEvent.getLevel().name());
+            Calendar calendarDate = Calendar.getInstance();
+            calendarDate.setTimeInMillis(logEvent.getTimeStamp());
+            event.setDate(calendarDate);
+            event.setFormattedMessage(logEvent.getFormattedMessage());
+            event.setMessage(logEvent.getMessage());
+            java.lang.Object[] arguments = logEvent.getArgumentArray();
+            for (int i = 0; i < arguments.length; ++i) {
+                event.getArguments().add(arguments[i].toString());
+            }
+            log.getLogEvents().add(event);
+        }
+        status.setLog(log);
+        
         return status;
     }
 
