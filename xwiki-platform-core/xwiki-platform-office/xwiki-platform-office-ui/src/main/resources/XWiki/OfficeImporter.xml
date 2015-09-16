@@ -50,7 +50,7 @@
   #end
 #elseif("$!request.page" == '')
   ## This page does not propose to select the target page anymore. We redirect to the create action instead
-  {{error}}$services.localization.render('office.form.error.noDocument', ['[[', "&gt;&gt;path:$doc.getURL('create', 'type=office')]]"]){{/error}}
+  {{error}}$services.localization.render('office.form.error.noDocument', ['[[', "&gt;&gt;path:$doc.getURL('create', 'type=office&amp;displayForm=true')]]"]){{/error}}
 #else
   #set ($targetReference = $services.model.resolveDocument($request.page))
   #set ($targetDoc = $xwiki.getDocument($targetReference))
