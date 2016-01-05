@@ -235,7 +235,8 @@ public class SkinAction extends XWikiAction
             if (doc.isNew()) {
                 LOGGER.debug("[{}] is not a document", doc.getDocumentReference().getName());
             } else {
-                return renderFileFromObjectField(filename, doc, context)
+                return renderFileFromOverriddenTemplate(filename, doc, context) 
+                    || renderFileFromObjectField(filename, doc, context)
                     || renderFileFromAttachment(filename, doc, context)
                     || (SKINS_DIRECTORY.equals(doc.getSpace()) && renderFileFromFilesystem(
                         getSkinFilePath(filename, doc.getName()), context));
@@ -327,44 +328,101 @@ public class SkinAction extends XWikiAction
     {
         LOGGER.debug("... as object property");
 
-        BaseObject object = doc.getObject("XWiki.XWikiSkins");
-        String content = null;
-        if (object != null) {
-            content = object.getStringValue(filename);
+        DocumentReference classReference =
+                new DocumentReference(doc.getDocumentReference().getWikiReference().getName(), "XWiki", "XWikiSkins");
+        
+        BaseObject object = doc.getXObject(classReference);
+        if (object == null) {
+            LOGGER.debug("Object not found");
+            return false;
         }
-
-        if (!StringUtils.isBlank(content)) {
-            XWiki xwiki = context.getWiki();
-
-            // Evaluate the file only if it's of a supported type.
-            String mimetype = xwiki.getEngineContext().getMimeType(filename.toLowerCase());
-            if (isCssMimeType(mimetype) || isJavascriptMimeType(mimetype)) {
-                final ObjectPropertyReference propertyReference =
-                    new ObjectPropertyReference(filename, object.getReference());
-
-                // Evaluate the content with the rights of the document's author.
-                content = evaluateVelocity(content, propertyReference, doc.getAuthorReference(), context);
-            }
-
-            // Prepare the response.
-            XWikiResponse response = context.getResponse();
-            // Since object fields are read as unicode strings, the result does not depend on the wiki encoding. Force
-            // the output to UTF-8.
-            response.setCharacterEncoding(ENCODING);
-
-            // Write the content to the response's output stream.
-            byte[] data = content.getBytes(ENCODING);
-            setupHeaders(response, mimetype, doc.getDate(), data.length);
-            response.getOutputStream().write(data);
-
-            return true;
-        } else {
-            LOGGER.debug("Object field not found or empty");
-        }
-
-        return false;
+        
+        return renderFileFromObjectProperty(object, filename, filename, doc, context);
     }
 
+    /**
+     * Tries to serve the content of an overridden template as a skin file.
+     *
+     * @param filename The name of the skin file that should be rendered.
+     * @param doc The skin {@link XWikiDocument document}.
+     * @param context The current {@link XWikiContext request context}.
+     * @return <tt>true</tt> if the object exists, and the field is set to a non-empty value, and its content was
+     *         successfully sent.
+     * @throws IOException If the response cannot be sent.
+     * 
+     * @since 7.4.1 
+     */
+    private boolean renderFileFromOverriddenTemplate(String filename, XWikiDocument doc, final XWikiContext context)
+            throws IOException
+    {
+        LOGGER.debug("... as overridden template property");
+                
+        DocumentReference classReference = 
+                new DocumentReference(doc.getDocumentReference().getWikiReference().getName(), "XWiki", 
+                        "XWikiSkinFileOverrideClass");
+        
+        BaseObject object = doc.getXObject(classReference, "path", filename);
+        if (object == null) {
+            LOGGER.debug("Overridden template not found");
+            return false;
+        }
+
+        return renderFileFromObjectProperty(object, "content", filename, doc, context);
+    }
+
+    /**
+     * Tries to serve the content of the property of an object as a skin file.
+     *
+     * @param object The object containing the content to serve
+     * @param propertyName The name of the property containing the content to serve 
+     * @param filename The name of the skin file that should be rendered.
+     * @param doc The skin {@link XWikiDocument document}.
+     * @param context The current {@link XWikiContext request context}.
+     * @return <tt>true</tt> if the object exists, and the field is set to a non-empty value, and its content was
+     *         successfully sent.
+     * @throws IOException If the response cannot be sent.
+     * 
+     * @since 7.4.1
+     */
+    private boolean renderFileFromObjectProperty(BaseObject object, String propertyName, String filename,
+            XWikiDocument doc,
+            final XWikiContext context) throws IOException
+    {
+        // Get the content
+        String content = object.getStringValue(propertyName);
+        
+        if (StringUtils.isBlank(content)) {
+            // No content
+            LOGGER.debug("Object field empty");
+            return false;
+        }
+        
+        XWiki xwiki = context.getWiki();
+
+        // Evaluate the file only if it's of a supported type.
+        String mimetype = xwiki.getEngineContext().getMimeType(filename.toLowerCase());
+        if (isCssMimeType(mimetype) || isJavascriptMimeType(mimetype) || isLessCssFile(filename)) {
+            final ObjectPropertyReference propertyReference =
+                    new ObjectPropertyReference(propertyName, object.getReference());
+
+            // Evaluate the content with the rights of the document's author.
+            content = evaluateVelocity(content, propertyReference, doc.getAuthorReference(), context);
+        }
+
+        // Prepare the response.
+        XWikiResponse response = context.getResponse();
+        // Since object fields are read as unicode strings, the result does not depend on the wiki encoding. Force
+        // the output to UTF-8.
+        response.setCharacterEncoding(ENCODING);
+
+        // Write the content to the response's output stream.
+        byte[] data = content.getBytes(ENCODING);
+        setupHeaders(response, mimetype, doc.getDate(), data.length);
+        response.getOutputStream().write(data);
+
+        return true;
+    }
+    
     private String evaluateVelocity(String content, EntityReference reference, DocumentReference author,
         XWikiContext context)
     {
