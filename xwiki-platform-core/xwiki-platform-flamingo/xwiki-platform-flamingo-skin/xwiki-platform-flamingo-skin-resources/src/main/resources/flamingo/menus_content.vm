@@ -116,7 +116,9 @@
  * Display the edit menu
  *#
 #macro(displayEditMenu)
-  #set ($defaultEditURL = $doc.getURL($doc.getDefaultEditMode(), $!languageparams))
+  #set ($queryStringParameters = {})
+  #set ($discard = $queryStringParameters.putAll($request.parameterMap))
+  #set ($defaultEditURL = $doc.getURL($doc.getDefaultEditMode(), $escapetool.url($queryStringParameters)))
   #set ($staticExtensions = [])
   #if ($isAdvancedUser)
     ##
@@ -130,7 +132,8 @@
     ## document with the WYSIWYG editor.
     #define ($editWYSIWYG)
       #if ($services.wysiwyg.isSyntaxSupported($tdoc.syntax.toIdString()))
-        #submenuitem($doc.getURL('edit', "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=wysiwyg") $services.localization.render('core.menu.edit.wysiwyg') 'tmEditWysiwyg', '', 'pencil')
+        #set ($discard = $queryStringParameters.put('editor', 'wysiwyg'))
+        #submenuitem($doc.getURL('edit', $escapetool.url($queryStringParameters)) $services.localization.render('core.menu.edit.wysiwyg') 'tmEditWysiwyg', '', 'pencil')
       #end
     #end
     #set ($discard = $staticExtensions.add( { 'content': $editWYSIWYG, 'order': 20000, 'separator': true}))
@@ -138,14 +141,16 @@
     ## WIKI EDITOR
     ##
     #define ($wikiEditor)
-      #submenuitem($doc.getURL('edit', "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=wiki") $services.localization.render('core.menu.edit.wiki') 'tmEditWiki', '', 'wrench')
+      #set ($discard = $queryStringParameters.put('editor', 'wiki'))
+      #submenuitem($doc.getURL('edit', $escapetool.url($queryStringParameters)) $services.localization.render('core.menu.edit.wiki') 'tmEditWiki', '', 'wrench')
     #end
     #set ($discard = $staticExtensions.add( { 'content': $wikiEditor, 'order': 30000}))
     ##
     ## INLINE EDITOR
     ##
     #define ($inlineEditor)
-      #submenuitem($doc.getURL('edit', "$!{languageparams}#if ($languageparams != '')&amp;#{end}editor=inline") $services.localization.render('core.menu.edit.inline') 'tmEditInline', '', 'list-alt')
+      #set ($discard = $queryStringParameters.put('editor', 'inline'))
+      #submenuitem($doc.getURL('edit', $escapetool.url($queryStringParameters)) $services.localization.render('core.menu.edit.inline') 'tmEditInline', '', 'list-alt')
     #end
     #set ($discard = $staticExtensions.add( { 'content': $inlineEditor, 'order': 40000}))
     ##
@@ -157,18 +162,21 @@
     ## TODO: create a proprer 'page administration' and stop adding a right editor in this menu
     #define ($rightsEditor)
       #if ($doc.name != 'WebHome' || !$hasSpaceAdmin || !$isAdminAppInstalled)
-        #submenuitem($doc.getURL('edit', 'editor=rights') $services.localization.render('core.menu.edit.rights') 'tmEditRights', '', 'lock')
+        #set ($discard = $queryStringParameters.put('editor', 'rights'))
+        #submenuitem($doc.getURL('edit', $escapetool.url($queryStringParameters)) $services.localization.render('core.menu.edit.rights') 'tmEditRights', '', 'lock')
       #end
     #end
     #set ($discard = $staticExtensions.add( { 'content': $rightsEditor, 'order': 50000, 'separator': true}))
     ##
     ## OBJECTS EDITOR
     ##
-    #set ($discard = $staticExtensions.add( { 'content': "#submenuitem($doc.getURL('edit', 'editor=object') $services.localization.render('core.menu.edit.object') 'tmEditObject', '', 'hdd')", 'order': 60000}))
+    #set ($discard = $queryStringParameters.put('editor', 'object'))
+    #set ($discard = $staticExtensions.add( { 'content': "#submenuitem($doc.getURL('edit', $escapetool.url($queryStringParameters)) $services.localization.render('core.menu.edit.object') 'tmEditObject', '', 'hdd')", 'order': 60000}))
     ##
     ## CLASS EDITOR
     ##
-    #set ($discard = $staticExtensions.add( { 'content': "#submenuitem($doc.getURL('edit', 'editor=class') $services.localization.render('core.menu.edit.class') 'tmEditClass', '', 'hdd')", 'order': 70000}))
+    #set ($discard = $queryStringParameters.put('editor', 'class'))
+    #set ($discard = $staticExtensions.add( { 'content': "#submenuitem($doc.getURL('edit', $escapetool.url($queryStringParameters)) $services.localization.render('core.menu.edit.class') 'tmEditClass', '', 'hdd')", 'order': 70000}))
   #end
   ##
   ## Display all the extensions points, including the static ones
