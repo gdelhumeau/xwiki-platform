@@ -52,6 +52,7 @@ public class QueryGenerator
     private QueryManager queryManager;
 
     @Inject
+    @Named("cached")
     private ModelBridge modelBridge;
 
     @Inject
