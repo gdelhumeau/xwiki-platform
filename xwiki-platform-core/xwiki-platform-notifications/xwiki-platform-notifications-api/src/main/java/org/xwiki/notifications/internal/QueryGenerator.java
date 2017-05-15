@@ -22,6 +22,7 @@ package org.xwiki.notifications.internal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -32,6 +33,7 @@ import org.xwiki.configuration.ConfigurationSource;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.notifications.NotificationException;
+import org.xwiki.notifications.NotificationFilter;
 import org.xwiki.notifications.NotificationPreference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryException;
@@ -48,6 +50,8 @@ import org.xwiki.text.StringUtils;
 @Singleton
 public class QueryGenerator
 {
+    private static final String FAIL_GET_FILTERS = "Failed to get all the notification filters.";
+
     @Inject
     private QueryManager queryManager;
 
@@ -61,6 +65,9 @@ public class QueryGenerator
     @Inject
     @Named("user")
     private ConfigurationSource userPreferencesSource;
+
+    @Inject
+    private NotificationFilterManager notificationFilterManager;
 
     /**
      * Generate the query.
@@ -99,6 +106,9 @@ public class QueryGenerator
 
         hql.append(")");
 
+        handleFiltersOR(user, hql);
+        handleFiltersAND(user, hql);
+
         handleBlackList(blackList, hql);
         handleEndDate(endDate, hql);
         handleHiddenEvents(hql);
@@ -116,8 +126,50 @@ public class QueryGenerator
         handleBlackList(blackList, query);
         handleEndDate(endDate, query);
 
+        handleFiltersParams(user, query);
+
         // Return the query
         return query;
+    }
+
+    private void handleFiltersOR(DocumentReference user, StringBuilder hql) throws NotificationException
+    {
+        StringBuilder query = new StringBuilder();
+        String separator = "";
+
+        for (NotificationFilter filter : notificationFilterManager.getAllNotificationFilters()) {
+            String filterQuery = filter.queryFilterOR(user);
+            if (StringUtils.isNotBlank(filterQuery)) {
+                query.append(separator);
+                query.append(filterQuery);
+                separator = " OR ";
+            }
+        }
+
+        if (StringUtils.isNotBlank(query.toString())) {
+            hql.append(String.format(" AND (%s)", query.toString()));
+        }
+}
+
+    private void handleFiltersAND(DocumentReference user, StringBuilder hql) throws NotificationException
+    {
+        for (NotificationFilter filter : notificationFilterManager.getAllNotificationFilters()) {
+            String filterQuery = filter.queryFilterAND(user);
+            if (StringUtils.isNotBlank(filterQuery)) {
+                hql.append(" AND ");
+                hql.append(filterQuery);
+            }
+        }
+    }
+
+    private void handleFiltersParams(DocumentReference user, Query query) throws NotificationException
+    {
+        for (NotificationFilter filter : notificationFilterManager.getAllNotificationFilters()) {
+            Map<String, Object> params = filter.queryFilterParams(user);
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
+                query.bindValue(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     private void handleEndDate(Date endDate, Query query)

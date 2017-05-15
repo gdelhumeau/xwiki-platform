@@ -19,13 +19,19 @@
  */
 package org.xwiki.notifications.internal;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections.map.HashedMap;
 import org.slf4j.Logger;
 import org.xwiki.component.annotation.Component;
 import org.xwiki.eventstream.Event;
+import org.xwiki.model.EntityType;
 import org.xwiki.model.reference.DocumentReference;
+import org.xwiki.model.reference.EntityReferenceSerializer;
 import org.xwiki.notifications.NotificationException;
 import org.xwiki.notifications.NotificationFilter;
 import org.xwiki.notifications.NotificationPreferenceScope;
@@ -41,7 +47,12 @@ import org.xwiki.notifications.NotificationPreferenceScope;
 public class ScopeNotificationFilter implements NotificationFilter
 {
     @Inject
+    @Named("cached")
     private ModelBridge modelBridge;
+
+    @Inject
+    @Named("local")
+    private EntityReferenceSerializer<String> serializer;
 
     @Inject
     private Logger logger;
@@ -71,5 +82,97 @@ public class ScopeNotificationFilter implements NotificationFilter
         }
 
         return hasRestriction && !matchRestriction;
+    }
+
+    @Override
+    public String queryFilterOR(DocumentReference user)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        String separator = "";
+
+        try {
+            for (NotificationPreferenceScope scope : modelBridge.getNotificationPreferenceScopes(user)) {
+                stringBuilder.append(separator);
+                stringBuilder.append("(");
+                stringBuilder.append(String.format("event.type = '%s'", scope.getEventType()));
+
+                final String scopeHash = getScopeHash(scope);
+
+                switch (scope.getScopeReference().getType()) {
+                    case DOCUMENT:
+                        stringBuilder.append(String.format(" AND event.wiki = :wiki_%s AND event.page = :page_%s",
+                                scopeHash, scopeHash));
+                        break;
+                    case SPACE:
+                        stringBuilder.append(String.format(" AND event.wiki = :wiki_%s AND event.space LIKE :space_%s",
+                                scopeHash, scopeHash));
+                        break;
+                    case WIKI:
+                        stringBuilder.append(String.format(" AND event.wiki = :wiki_%s", scopeHash));
+                        break;
+                }
+
+                stringBuilder.append(")");
+                separator = " OR ";
+            }
+        } catch (NotificationException e) {
+            logger.warn("Failed to filter the notifications.", e);
+        }
+
+        return stringBuilder.toString();
+    }
+
+    @Override
+    public String queryFilterAND(DocumentReference user)
+    {
+        return "";
+    }
+
+    @Override
+    public Map<String, Object> queryFilterParams(DocumentReference user)
+    {
+        Map<String, Object> params = new HashedMap();
+
+        try {
+            for (NotificationPreferenceScope scope : modelBridge.getNotificationPreferenceScopes(user)) {
+
+                final String scopeHash = getScopeHash(scope);
+
+                switch (scope.getScopeReference().getType()) {
+                    case DOCUMENT:
+                        params.put(String.format("wiki_%s", scopeHash), scope.getScopeReference().extractReference(
+                                EntityType.WIKI).getName());
+                        params.put(String.format("page_%s", scopeHash),
+                                serializer.serialize(scope.getScopeReference()));
+                        break;
+                    case SPACE:
+                        params.put(String.format("wiki_%s", scopeHash), scope.getScopeReference().extractReference(
+                                EntityType.WIKI).getName());
+                        params.put(String.format("space_%s", scopeHash),
+                                String.format("%s.", serializer.serialize(scope.getScopeReference())));
+                        break;
+                    case WIKI:
+                        params.put(String.format("wiki_%s", scopeHash), scope.getScopeReference().extractReference(
+                                EntityType.WIKI).getName());
+                        break;
+                }
+            }
+        } catch (NotificationException e) {
+            logger.warn("Failed to filter the notifications.", e);
+        }
+
+        return params;
+    }
+
+    private String getScopeHash(NotificationPreferenceScope scope)
+    {
+        // I first used hashCode(), but the result changes from one execution to an other.
+        // See: http://eclipsesource.com/blogs/2012/09/04/the-3-things-you-should-know-about-hashcode/
+        // Because of that, it was harder to write unit tests.
+        // Instead, I have chosen to rely on a determinist algorithm such as MD2.
+        return DigestUtils.md5Hex(
+                String.format("%s_%s", scope.getEventType(), scope.getScopeReference())
+            ).substring(0, 7);
     }
 }

@@ -19,6 +19,8 @@
  */
 package org.xwiki.notifications;
 
+import java.util.Map;
+
 import org.xwiki.component.annotation.Role;
 import org.xwiki.eventstream.Event;
 import org.xwiki.model.reference.DocumentReference;
@@ -35,4 +37,10 @@ public interface NotificationFilter
      * @return true if the event should be dismiss
      */
     boolean filterEvent(Event event, DocumentReference user);
+
+    String queryFilterOR(DocumentReference user);
+
+    String queryFilterAND(DocumentReference user);
+
+    Map<String, Object> queryFilterParams(DocumentReference user);
 }
